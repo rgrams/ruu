@@ -1,0 +1,231 @@
+
+local dint = require "main.ruu.ruu"
+
+local statColorNormal -- set on init
+local statColorNewRecord = vmath.vector4(0.39, 0.75, 0.45, 1)
+local statnames = { "score", "wave", "kills", "time" }
+local newRecordNodes = {} -- changing list of new record text nodes
+
+local allbtns = {
+	"main.play", "main.arena", "main.score",
+	"pause.resume", "pause.restart", "pause.quitmenu",
+	"death.restart", "death.quitmenu",
+	"score.back", "score.clear",
+	"clear-confirm.cancel", "clear-confirm.confirm"
+}
+local btns_main = {"main.play", "main.arena", "main.score"}
+local btns_pause = {"pause.resume", "pause.restart", "pause.quitmenu"}
+local btns_death = {"death.restart", "death.quitmenu"}
+local btns_score = {"score.back", "score.clear"}
+local btns_clearConfirm = {"clear-confirm.cancel", "clear-confirm.confirm"}
+
+local manager = "root#manager"
+
+local key
+
+
+local function swap_group(self, from, to)
+	dint.group_swap(self.key, from, to)
+	self.state = to
+end
+
+function init(self)
+	statColorNormal = gui.get_color(gui.get_node("death_session_wave"))
+	gui.set_text(gui.get_node("versiontext"), "v. " .. sys.get_config("project.version"))
+	self.state = "main"
+
+	self.key = dint.getkey()
+	key = self.key
+	msg.post(".", "acquire_input_focus")
+	for i, v in ipairs(allbtns) do
+		dint.newbutton(self.key, v, false)
+	end
+
+	dint.new_group(self.key, "main", "main menu", btns_main, true, false, false)
+	dint.new_group(self.key, "pause", "pause menu", btns_pause, true, false, false)
+	dint.new_group(self.key, "death", "death menu", btns_death, true, false, false)
+	dint.new_group(self.key, "score", "score menu", btns_score, true, false, false)
+	dint.new_group(self.key, "clear-confirm", "clear-confirm menu", btns_clearConfirm, true, false, false)
+
+	dint.group_enable(self.key, "main")
+
+	dint.btn_set_releasefunc(self.key, "main.play", function() play(self, false) end)
+	dint.btn_set_releasefunc(self.key, "main.arena", function() play(self, true) end)
+	dint.btn_set_releasefunc(self.key, "main.score", function() swap_group(self, "main", "score") end)
+	dint.btn_set_releasefunc(self.key, "pause.resume", function() resume(self) end)
+	dint.btn_set_releasefunc(self.key, "pause.restart", function() restart_pause(self) end)
+	dint.btn_set_releasefunc(self.key, "pause.quitmenu", function() pause_quitmenu(self) end)
+	dint.btn_set_releasefunc(self.key, "death.restart", function() restart_death(self) end)
+	dint.btn_set_releasefunc(self.key, "death.quitmenu", function() death_quitmenu(self) end)
+	dint.btn_set_releasefunc(self.key, "score.back", function() swap_group(self, "score", "main") end)
+	dint.btn_set_releasefunc(self.key, "score.clear", function() swap_group(self, "score", "clear-confirm") end)
+	dint.btn_set_releasefunc(self.key, "clear-confirm.cancel", function() swap_group(self, "clear-confirm", "score") end)
+	dint.btn_set_releasefunc(self.key, "clear-confirm.confirm", function() clear_scores(self) end)
+end
+
+function set_score_texts(self, stats, new, arenaMode)
+	for k, v in pairs(stats) do -- { last, session, record }
+		for i, stat in ipairs(statnames) do -- { score, wave, kills, time }
+			-- get stat text node in death menu
+			local node = gui.get_node(string.format("death_%s_%s", k, stat))
+
+			-- get stat text node for the current mode in high score menu
+			local modestr = ""
+			if arenaMode and k ~= "last" then modestr = "_arena" end
+			local node2 = gui.get_node(string.format("score_%s_%s%s", k, stat, modestr))
+
+			-- for session and record scores, modify key for the mode so it gets the right stats
+			local modestat = stat
+			if arenaMode and k ~= "last" then
+				modestat = stat .. "_a"
+			end
+			if stat ~= "time" then
+				gui.set_text(node, v[modestat])
+				gui.set_text(node2, v[modestat])
+			else
+				local sec = v[modestat] % 60
+				local min = math.floor(v[modestat]/60)
+				local s = string.format("%02d:%02d", min, sec)
+				gui.set_text(node, s)
+				gui.set_text(node2, s)
+			end
+		end
+	end
+	for categ, list in pairs(new) do
+		for stat, v in pairs(list) do
+			local node = gui.get_node(string.format("death_%s_%s", categ, stat))
+			table.insert(newRecordNodes, node)
+			gui.set_color(node, statColorNewRecord)
+		end
+	end
+	-- Set accuracy stat texts (only for latest) in death and high score menus
+	local acc
+	if stats.last.misses == 0 and stats.last.hits == 0 then acc = "00.00%"
+	else acc = string.format("%.2f%%", 100 * stats.last.hits / (stats.last.misses + stats.last.hits))
+	end
+	gui.set_text(gui.get_node("death_last_accuracy"), acc)
+	gui.set_text(gui.get_node("score_last_accuracy"), acc)
+
+	-- Toggle/set mode labels correctly
+	gui.set_enabled(gui.get_node("death_arena_mode"), arenaMode)
+	if arenaMode then gui.set_text(gui.get_node("score.last_mode"), "(hard)")
+	else gui.set_text(gui.get_node("score.last_mode"), "(normal)")
+	end
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id == hash("player death") then
+		for i, v in ipairs(newRecordNodes) do
+			gui.set_color(v, statColorNormal)
+			newRecordNodes[i] = nil
+		end
+		set_score_texts(self, message.stats, message.new, message.arenaMode)
+		dint.group_enable(self.key, "death")
+		self.state = "death"
+
+	elseif message_id == hash("set scores") then
+		set_score_texts(self, message.stats, message.new, message.arenaMode)
+
+	elseif message_id == hash("set username") then
+		gui.set_text(gui.get_node("main_username"), "Hello " .. message.username)
+	end
+end
+
+function on_input(self, action_id, action)
+	if action_id == nil then
+		dint.update_mouse(self.key, action.x, action.y)
+	elseif action_id == hash("mouse click") then
+		dint.update_mouse(self.key, action.x, action.y)
+		if action.pressed then dint.input(self.key, dint.input_click_press)
+		elseif action.released then dint.input(self.key, dint.input_click_release)
+		end
+	elseif action_id == hash("enter") then
+		if action.pressed then dint.input(self.key, dint.input_enter_press)
+		elseif action.released then dint.input(self.key, dint.input_enter_release)
+		end
+	elseif action_id == hash("up") then
+		if action.pressed or action.repeated then
+			dint.input(self.key, dint.input_up)
+		end
+	elseif action_id == hash("down") then
+		if action.pressed or action.repeated then
+			dint.input(self.key, dint.input_down)
+		end
+	elseif action_id == hash("left") then
+		if action.pressed or action.repeated then
+			dint.input(self.key, dint.input_left)
+		end
+	elseif action_id == hash("right") then
+		if action.pressed or action.repeated then
+			dint.input(self.key, dint.input_right)
+		end
+	elseif action_id == hash("escape") then
+		if action.pressed then
+			if self.state == "game" then pause(self)
+			elseif self.state == "pause" then resume(self)
+			elseif self.state == "score" then swap_group(self, "score", "main")
+			elseif self.state == "death" then death_quitmenu(self)
+			elseif self.state == "clear-confirm" then swap_group(self, "clear-confirm", "score")
+			elseif self.state == "main" then msg.post("@system:", "exit", {code = 0})
+			end
+		end
+
+	elseif action_id == hash("test") then
+		local isloaded = html5.run("kongIsLoaded();")
+		print(isloaded)
+		if isloaded == "true" then
+			local user = html5.run("kongregate.services.getUsername();")
+			print("Kong isLoaded, user = ", user)
+			msg.post(interface, "set username", {username = user})
+		end
+		if action.pressed then msg.post("@system:", "toggle_profile") end
+	end
+end
+
+function play(self, arena)
+	if arena then msg.post(manager, "play arena")
+	else msg.post(manager, "play normal")
+	end
+	dint.group_disable(self.key, "main")
+	self.state = "game"
+end
+
+
+function pause(self)
+	msg.post(manager, "pause")
+	dint.group_enable(self.key, "pause")
+	self.state = "pause"
+end
+
+function resume(self)
+	dint.group_disable(self.key, "pause")
+	msg.post(manager, "resume")
+	self.state = "game"
+end
+
+function restart_pause(self) -- restart from pause menu
+	dint.group_disable(self.key, "pause")
+	msg.post(manager, "restart")
+	self.state = "game"
+end
+
+function restart_death(self) -- restart from death menu
+	dint.group_disable(self.key, "death")
+	msg.post(manager, "restart")
+	self.state = "game"
+end
+
+function pause_quitmenu(self)
+	swap_group(self, "pause", "main")
+	msg.post(manager, "quit to menu")
+end
+
+function death_quitmenu(self)
+	swap_group(self, "death", "main")
+	msg.post(manager, "quit to menu")
+end
+
+function clear_scores(self)
+	msg.post(manager, "clear scores")
+	swap_group(self, "clear-confirm", "score")
+end

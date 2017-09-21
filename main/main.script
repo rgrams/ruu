@@ -1,0 +1,11 @@
+
+
+function init(self)
+	msg.post(".", "acquire_input_focus")
+end
+
+function on_input(self, action_id, action)
+	if action_id == hash("escape") and action.pressed then
+		msg.post("@system:", "exit", {code = 0})
+	end
+end

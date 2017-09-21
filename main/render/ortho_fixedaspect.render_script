@@ -1,0 +1,104 @@
+
+-- ########   An orthographic render script with a fixed aspect ratio.   ########
+
+-- Will render a fixed area of world-space pixels (original_width x original_height), centered around the camera position.
+-- The window can be resized in any way and the render area will maintain aspect ratio at the largest size that fits.
+
+-- IMPORTANT: Set original_width and original_height in init() to the desired world-space view area.
+
+-- The display width and height in your game.project file will only determine the inital window size.
+-- Use the 'window_manager' module to get the view area extents from game scripts.
+
+local winman = require "main.framework.window_manager"
+local original_width
+local original_height
+local window_width
+local window_height
+local final_width
+local final_height
+local xoffset
+local yoffset
+
+
+function init(self)
+    self.tile_pred = render.predicate({"tile"})
+    self.gui_pred = render.predicate({"gui"})
+    self.text_pred = render.predicate({"text"})
+    --self.model_pred = render.predicate({"model"})
+    self.particle_pred = render.predicate({"particle"})
+
+    self.clear_color = vmath.vector4()
+    self.clear_color.x = sys.get_config("render.clear_color_red", 0)
+    self.clear_color.y = sys.get_config("render.clear_color_green", 0)
+    self.clear_color.z = sys.get_config("render.clear_color_blue", 0)
+    self.clear_color.w = sys.get_config("render.clear_color_alpha", 0)
+
+    self.view = vmath.matrix4()
+	self.projection = vmath.matrix4()
+	original_width = 800
+	original_height = 550
+
+	update_window()
+end
+
+function update(self)
+    render.set_depth_mask(true)
+    render.clear({[render.BUFFER_COLOR_BIT] = self.clear_color, [render.BUFFER_DEPTH_BIT] = 1, [render.BUFFER_STENCIL_BIT] = 0})
+
+	render.set_viewport(xoffset, yoffset, final_width, final_height)
+
+	render.set_view(self.view)
+
+    render.set_depth_mask(false)
+    render.disable_state(render.STATE_DEPTH_TEST)
+    render.disable_state(render.STATE_STENCIL_TEST)
+    render.enable_state(render.STATE_BLEND)
+    render.set_blend_func(render.BLEND_SRC_ALPHA, render.BLEND_ONE_MINUS_SRC_ALPHA)
+    render.disable_state(render.STATE_CULL_FACE)
+
+	local left, right = -original_width/2, original_width/2
+	local bottom, top = -original_height/2, original_height/2
+
+	render.set_projection(vmath.matrix4_orthographic(left, right, bottom, top, -1, 1))
+
+    render.draw(self.tile_pred)
+	render.draw(self.particle_pred)
+    --render.draw(self.model_pred)
+    render.draw_debug3d()
+
+    render.set_view(vmath.matrix4())
+    render.set_projection(vmath.matrix4_orthographic(xoffset, xoffset + final_width, yoffset, yoffset + final_height, -1, 1))
+
+    render.enable_state(render.STATE_STENCIL_TEST)
+    render.draw(self.gui_pred)
+    render.draw(self.text_pred)
+    render.disable_state(render.STATE_STENCIL_TEST)
+
+    --render.set_depth_mask(false)
+    render.draw_debug2d()
+end
+
+function on_message(self, message_id, message)
+    if message_id == hash("clear_color") then
+        self.clear_color = message.color
+    elseif message_id == hash("set_view_projection") then
+        self.view = message.view
+	elseif message_id == hash("window_resized") then
+		update_window()
+    end
+end
+
+function update_window()
+	window_width = render.get_window_width()
+	window_height = render.get_window_height()
+	winman.halfx, winman.halfy = window_width / 2, window_height / 2
+
+	local zoom_factor = math.min(window_width / original_width, window_height / original_height)
+	winman.scale = zoom_factor
+
+	final_width = original_width * zoom_factor
+	final_height = original_height * zoom_factor
+	xoffset = -(final_width - window_width) / 2
+	yoffset = -(final_height - window_height) / 2
+	winman.barOffset.x, winman.barOffset.y = xoffset, yoffset
+end

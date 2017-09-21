@@ -1,0 +1,16 @@
+key_trigger {
+  input: KEY_ESC
+  action: "escape"
+}
+mouse_trigger {
+  input: MOUSE_BUTTON_LEFT
+  action: "mouse click"
+}
+mouse_trigger {
+  input: MOUSE_WHEEL_UP
+  action: "scroll up"
+}
+mouse_trigger {
+  input: MOUSE_WHEEL_DOWN
+  action: "scroll down"
+}

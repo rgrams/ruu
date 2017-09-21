@@ -1,0 +1,23 @@
+
+local ruu = require "main.ruu.ruu"
+
+
+function init(self)
+	pprint(tab)
+	--msg.post(".", "acquire_input_focus")
+	ruu:newButton("button2", true, nil, function() print("Button 2 released") end)
+	ruu:newButton("button1", true, nil, function() print("Button 1 released") end)
+	ruu:newCheckbox("checkbox1", true, nil, function(checked) print("Checkbox 1 released, checked = ", checked) end, false)
+	ruu:newCheckbox("checkbox2", true, nil, function(checked) print("Checkbox 2 released, checked = ", checked) end, true)
+	ruu:newCheckbox("checkbox3", true, nil, function(checked) print("Checkbox 3 released, checked = ", checked) end, true)
+	local radioButtons = {"radBtn1", "radBtn2", "radBtn3", "radBtn4", "radBtn5"}
+	ruu:newRadioButtonGroup(radioButtons, true, nil, function(name) print("Radio Button ", name, " checked.") end, "radBtn4")
+	ruu:newSlider("slider1", true, nil, nil, function(value) print("Slider - ", value) end, true, 200, 0.3)
+	ruu:newScrollBar("scrollbar1", true, nil, nil, function(value) print("ScrollBar - ", value) end, true, 200, 1, 100)
+
+	ruu:newScrollBox("scrollbox", "scrollbox_child", true, false, "scrollbox_scrollbar")
+end
+
+function on_input(self, action_id, action)
+	ruu:on_input(action_id, action)
+end
