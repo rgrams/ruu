@@ -28,19 +28,63 @@ M.MODE_MOUSE = 2
 
 local mode = M.MODE_KEYBOARD
 
+-- ---------------------------------------------------------------------------------
+--| 					PRIVATE FUNCTIONS 1: SETUP & KEYS							|
+-- ---------------------------------------------------------------------------------
+
 local btns = {} -- FORMAT = btns[key] = {all = {}, active = {}, groups = {}, cur_hover = nil, cur_mouse_hover = nil, dragging = false}
 -- Note: cur_hover stores a reference to the button "object"/table, not the button name
 
--- The 'key' given to all public functions is a table with a key "keyName", with a unique value (an integer).
--- The default 'key' table is the module itself. (functions called with a colon, ruu:func())
-local keyName = hash("arglefraster")
-M[keyName] = 1
-local keyCount = 1
-btns[M[keyName]] = {all = {}, active = {}, groups = {}, cur_hover = nil, cur_mouse_hover = nil}
+local function new_context_table()
+	return {all = {}, active = {}, groups = {}, cur_hover = nil, cur_mouse_hover = nil}
+end
 
+local keyName = hash("arglefraster")
+local keyCount = 1
+
+-- ##########  Context Keys  ##########
+-- Each key defines a totally separate GUI context.
+-- Unless you're doing multiplayer or something fancy, you only need the default one (i.e. you never need to call M.getkey())
+--	 The 'key' given to all public functions is a table with a key 'keyName' mapped to a unique value (an integer).
+--	 The default 'key' table is the module itself. (used by functions called with a colon, ruu:func())
+function M.getkey()
+	local k = {}
+	keyCount = keyCount + 1
+	k[keyName] = keyCount
+	btns[keyCount] = new_context_table()
+	return k
+end
+
+-- make default key and context
+M[keyName] = 1
+btns[M[keyName]] = new_context_table()
+
+local function verify_key(key, ctxString)
+	ctxString = ctxString or ""
+	if not btns[key] then
+		error("RUU -" .. ctxString .. "- ERROR: Invalid key. Call functions with a colon (ruu:func()) or with a key made with ruu.getkey(). (i.e. ruu.func(key)).")
+	end
+end
 
 -- ---------------------------------------------------------------------------------
---| 							PRIVATE FUNCTIONS:									|
+--| 					  PRIVATE FUNCTIONS 2: UTILITIES							|
+-- ---------------------------------------------------------------------------------
+
+local function nextval(t, i) -- looping, used for setting up button list neighbors
+	if #t == 0 then return 0 end
+	i = i + 1
+	if i > #t then i = 1 end
+	return t[i]
+end
+
+local function prevval(t, i) -- looping, used for setting up button list neighbors
+	i = i - 1
+	if i < 1 then i = #t end
+	return t[i]
+end
+
+-- ---------------------------------------------------------------------------------
+--|					  PRIVATE FUNCTIONS 3: WIDGET BEHAVIOR							|
 -- ---------------------------------------------------------------------------------
 
 local function hover_button(self)
@@ -182,35 +226,9 @@ local function button_hover_adjacent(self, dirstring) -- keyboard/gamepad naviga
 	end
 end
 
-local function nextval(t, i) -- used for setting up button list neighbors
-	if #t == 0 then return 0 end
-	i = i + 1
-	if i > #t then i = 1 end
-	return t[i]
-end
-
-local function prevval(t, i) -- used for setting up button list neighbors
-	i = i - 1
-	if i < 1 then i = #t end
-	return t[i]
-end
-
 -- ---------------------------------------------------------------------------------
 --| 							PUBLIC FUNCTIONS:									|
 -- ---------------------------------------------------------------------------------
-
--- Get Key - Returns a string key for the component that called it and adds an entry for that key in the "btns" table.
--- 		All other public functions require one of these keys.
-function M.getkey()
-	--local k = msg.url()
-	--k = hash(tostring(k.socket) .. hash_to_hex(k.path) .. hash_to_hex(k.fragment))
-	--btns[k] = {all = {}, active = {}, groups = {}, cur_hover = nil, cur_mouse_hover = nil}
-	local k = {}
-	keyCount = keyCount + 1
-	k[keyName] = keyCount
-	btns[keyCount] = {all = {}, active = {}, groups = {}, cur_hover = nil, cur_mouse_hover = nil}
-	return k
-end
 
 function M.update_mouse(key, actionx, actiony, dx, dy) -- should call this from gui script before click and release events
 	-- If dragging, don't check for collisions or anything, just drag.
@@ -343,6 +361,7 @@ function M.btnlist_autoset_neighbors(key, list, vertical)
 end
 
 local function newBaseWidget(key, name, active, pressfunc, releasefunc)
+	verify_key(key, "newBaseWidget")
 	active = active or false
 	local widget = {
 		name = name,
@@ -364,7 +383,6 @@ local function newBaseWidget(key, name, active, pressfunc, releasefunc)
 		neighbor_prev = nil,
 		hover_adj = button_hover_adjacent
 	}
-	if not btns[key] then btns[key] = {all = {}, active = {}, groups = {}, cur_hover = nil} end
 	btns[key].all[name] = widget
 	if active then btns[key].active[name] = widget end
 	return widget
@@ -512,6 +530,7 @@ end
 
 function M.new_group(key, name, rootnode, children, autoset_btns_vert, autoset_btns_horiz, disable)
 	key = key[keyName]
+	verify_key(key, "new_group")
 	autoset_btns_vert = autoset_btns_vert or false
 	autoset_btns_horiz = autoset_btns_horiz or false
 	disable = disable or false
@@ -522,7 +541,6 @@ function M.new_group(key, name, rootnode, children, autoset_btns_vert, autoset_b
 		children = children -- list of button names
 	}
 	if disable then gui.set_enabled(group.node, false) end
-	if not btns[key] then btns[key] = {all = {}, active = {}, groups = {}, cur_hover = nil} end
 	btns[key].groups[name] = group
 	if autoset_btns_vert then M.btnlist_autoset_neighbors(key, children, true)
 	elseif autoset_btns_horiz then M.btnlist_autoset_neighbors(key, children, false)
