@@ -32,14 +32,14 @@ local mode = M.MODE_KEYBOARD
 --| 					PRIVATE FUNCTIONS 1: SETUP & KEYS							|
 -- ---------------------------------------------------------------------------------
 
-local btns = {} -- FORMAT = btns[key] = {all = {}, active = {}, groups = {}, cur_hover = nil, cur_mouse_hover = nil, dragging = false}
+local btns = {} -- FORMAT: btns[key] = new_context_table()
 -- Note: cur_hover stores a reference to the button "object"/table, not the button name
 
 local function new_context_table()
-	return {all = {}, active = {}, groups = {}, cur_hover = nil, cur_mouse_hover = nil}
+	return {all = {}, active = {}, groups = {}, cur_hover = nil, cur_mouse_hover = nil, dragging = 0, hovered = {}}
 end
 
-local keyName = hash("arglefraster")
+local keyName = hash("arglefraster") -- this really doesn't matter
 local keyCount = 1
 
 -- ##########  Context Keys  ##########
@@ -99,8 +99,8 @@ local function unhover_button(self)
 end
 
 local function press_button(self)
+	if not self.pressed then theme.press_btn(self) end
 	self.pressed = true
-	theme.press_btn(self)
 	if self.pressfunc then self.pressfunc() end
 end
 
@@ -108,7 +108,7 @@ local function press_slider(self)
 	self.pressed = true
 	theme.press_btn(self)
 	if self.pressfunc then self.pressfunc() end
-	btns[self.key].dragging = true
+	btns[self.key].dragging = btns[self.key].dragging + 1
 end
 
 local function release_button(self, dontfire) -- default is to fire
@@ -162,7 +162,7 @@ local function release_slider(self, dontfire) -- default is to fire
 		theme.release_btn(self)
 		self.pressed = false
 		if self.releasefunc and not dontfire then self.releasefunc() end
-		btns[self.key].dragging = false
+		btns[self.key].dragging = btns[self.key].dragging - 1
 	end
 end
 
@@ -226,6 +226,22 @@ local function button_hover_adjacent(self, dirstring) -- keyboard/gamepad naviga
 	end
 end
 
+local function scrollBox_hover(self)
+	self.hovered = true
+end
+
+local function scrollBox_unhover(self)
+	self.hovered = false
+end
+
+local function scrollBox_press(self)
+	btns[self.key].dragging = btns[self.key].dragging + 1
+end
+
+local function scrollBox_release(self)
+	btns[self.key].dragging = btns[self.key].dragging - 1
+end
+
 -- ---------------------------------------------------------------------------------
 --| 							PUBLIC FUNCTIONS:									|
 -- ---------------------------------------------------------------------------------
@@ -235,37 +251,33 @@ function M.update_mouse(key, actionx, actiony, dx, dy) -- should call this from 
 	-- When the mouse button is released the drag will end and things will go back to normal
 	-- 			I might want to update mouse again after mouse release . . .
 	if type(key) == "table" then key = key[keyName] end
-	local hit = false
+	local hitAny = false
 
-	if btns[key].dragging then
-		btns[key].cur_hover:drag(dx, dy)
-		local hit = true
+	if btns[key].dragging > 0 then
+		for i, v in ipairs(btns[key].hovered) do if v.drag then v:drag(dx, dy) end end
+		local hitAny = true
 	else
 		for k, v in pairs(btns[key].active) do -- hit test all active widgets
 			if gui.pick_node(v.node, actionx, actiony) then
-				if btns[key].cur_hover and v ~= btns[key].cur_hover then
-					btns[key].cur_hover:unhover()
-				end
+				-- hit
+				hitAny = true
 				if not v.hovered then
+					print("Hover")
+					table.insert(btns[key].hovered, v) -- add to hovered list
 					v:hover()
 				end
-				hit = true
-				btns[key].cur_mouse_hover = v
-				btns[key].cur_hover = v
-			elseif v.hovered and mode == M.MODE_MOUSE then
-				v:unhover()
-			end
-		end
-		if not hit then
-			if btns[key].cur_mouse_hover then
-				if btns[key].cur_mouse_hover.pressed then
-					btns[key].cur_mouse_hover:release(true)
+			elseif v.hovered then
+				for i, btn in ipairs(btns[key].hovered) do
+					if btn == v then
+						print("Unhover")
+						table.remove(btns[key].hovered, i)
+						v:unhover()
+					end
 				end
-				btns[key].cur_mouse_hover = nil
 			end
 		end
 	end
-	return hit -- for checking if input is consumed
+	return hitAny -- for checking if input is consumed
 end
 
 function M.on_input(key, action_id, action)
@@ -275,27 +287,25 @@ function M.on_input(key, action_id, action)
 		-- if you wish to tell if the mouse is over a button in your gui script you can call M.update_mouse directly and get the return value.
 	elseif action_id == M.input_click then -- Mouse click
 		if action.pressed then
-			if btns[key].cur_mouse_hover then btns[key].cur_hover:press() end
+			for i, v in ipairs(btns[key].hovered) do v:press() end
 		elseif action.released then
-			if btns[key].cur_mouse_hover then btns[key].cur_hover:release() end
+			for i, v in ipairs(btns[key].hovered) do v:release() end
 		end
 	elseif action_id == M.input_enter then -- Keyboard/Gamepad enter
 		if action.pressed then
-			if btns[key].cur_hover then btns[key].cur_hover:press() end
+			for i, v in ipairs(btns[key].hovered) do v:press() end
 		elseif action.released then
-			if btns[key].cur_hover then btns[key].cur_hover:release() end
+			for i, v in ipairs(btns[key].hovered) do v:release() end
 		end
 	elseif action_id == M.input_scrollUp then
 		if action.pressed then
-			if btns[key].cur_hover and btns[key].cur_hover.drag then
-				btns[key].cur_hover:drag(M.input_scroll_dist, M.input_scroll_dist)
-			end
+			for i, v in ipairs(btns[key].hovered) do if v.drag then v:drag(M.input_scroll_dist, M.input_scroll_dist) end end
+			M.update_mouse(key, action.x, action.y, action.dx, action.dy)
 		end
 	elseif action_id == M.input_scrollDown then
 		if action.pressed then
-			if btns[key].cur_hover and btns[key].cur_hover.drag then
-				btns[key].cur_hover:drag(-M.input_scroll_dist, -M.input_scroll_dist)
-			end
+			for i, v in ipairs(btns[key].hovered) do if v.drag then v:drag(-M.input_scroll_dist, -M.input_scroll_dist) end end
+			M.update_mouse(key, action.x, action.y, action.dx, action.dy)
 		end
 	elseif M.inputKeyDirs[action_id] and action.pressed then -- Keyboard/Gamepad navigation
 		if btns[key].cur_hover then btns[key].cur_hover:hover_adj(M.inputKeyDirs[action_id]) end
@@ -486,14 +496,17 @@ function M.newScrollBox(key, name, childname, active, horiz, scrollbarname)
 	box.scrollLength = (horiz and gui.get_size(box.child).x or gui.get_size(box.child).y) - box.viewLength -- max movement of child
 	box.range = math.max(0, box.scrollLength)
 	box.scroll = scrollBox_scroll
-	box.hover = function() end
-	box.unhover, box.press, box.release = box.hover, box.hover, box.hover
+	box.hover = scrollBox_hover
+	box.unhover = scrollBox_unhover
+	box.press = scrollBox_press
+	box.release = scrollBox_release
 
 	local barwidth = box.viewLength/(box.scrollLength + box.viewLength) * box.viewLength -- assuming the scrollbar is the same length as the mask
 	local scrollbar = M.newScrollBar(key, scrollbarname, active, nil, nil, function(value) box:scroll(value) end, false, box.viewLength, 1, barwidth)
 	scrollbar.scrollBox = box
 	box.scrollbar = scrollbar
-	box.drag = box.scrollbar.drag
+	box.touchScroll = false -- click-drag to scroll or not.
+	box.drag = function(self, dx, dy) local a = 1 if self.touchScroll then a = -self.viewLength / self.scrollLength end box.scrollbar:drag(dx*a, dy*a) end
 	return box
 end
 

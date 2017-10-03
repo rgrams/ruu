@@ -3,7 +3,6 @@ local ruu = require "main.ruu.ruu"
 
 
 function init(self)
-	pprint(tab)
 	--msg.post(".", "acquire_input_focus")
 	ruu:newButton("button2", true, nil, function() print("Button 2 released") end)
 	ruu:newButton("button1", true, nil, function() print("Button 1 released") end)
@@ -16,6 +15,7 @@ function init(self)
 	ruu:newScrollBar("scrollbar1", true, nil, nil, function(value) print("ScrollBar - ", value) end, true, 200, 1, 100)
 
 	ruu:newScrollBox("scrollbox", "scrollbox_child", true, false, "scrollbox_scrollbar")
+	ruu:newCheckbox("checkBox_in_scrollBox", true, nil, function(checked) print("checkBox_in_scrollBox released, checked = ", checked) end, false)
 end
 
 function on_input(self, action_id, action)
