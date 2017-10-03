@@ -5,6 +5,7 @@ local M = {}
 
 local theme = require "main.ruu.ruu default theme"
 
+--  INPUT
 M.inputKeyDirs = {}
 M.inputKeyDirs[hash("ui_up")] = "up"
 M.inputKeyDirs[hash("ui_down")] = "down"
@@ -29,6 +30,14 @@ local mode = M.MODE_KEYBOARD
 
 local btns = {} -- FORMAT = btns[key] = {all = {}, active = {}, groups = {}, cur_hover = nil, cur_mouse_hover = nil, dragging = false}
 -- Note: cur_hover stores a reference to the button "object"/table, not the button name
+
+-- The 'key' given to all public functions is a table with a key "keyName", with a unique value (an integer).
+-- The default 'key' table is the module itself. (functions called with a colon, ruu:func())
+local keyName = hash("arglefraster")
+M[keyName] = 1
+local keyCount = 1
+btns[M[keyName]] = {all = {}, active = {}, groups = {}, cur_hover = nil, cur_mouse_hover = nil}
+
 
 -- ---------------------------------------------------------------------------------
 --| 							PRIVATE FUNCTIONS:									|
@@ -193,9 +202,13 @@ end
 -- Get Key - Returns a string key for the component that called it and adds an entry for that key in the "btns" table.
 -- 		All other public functions require one of these keys.
 function M.getkey()
-	local k = msg.url()
-	k = hash(tostring(k.socket) .. hash_to_hex(k.path) .. hash_to_hex(k.fragment))
-	btns[k] = {all = {}, active = {}, groups = {}, cur_hover = nil, cur_mouse_hover = nil}
+	--local k = msg.url()
+	--k = hash(tostring(k.socket) .. hash_to_hex(k.path) .. hash_to_hex(k.fragment))
+	--btns[k] = {all = {}, active = {}, groups = {}, cur_hover = nil, cur_mouse_hover = nil}
+	local k = {}
+	keyCount = keyCount + 1
+	k[keyName] = keyCount
+	btns[keyCount] = {all = {}, active = {}, groups = {}, cur_hover = nil, cur_mouse_hover = nil}
 	return k
 end
 
@@ -203,6 +216,7 @@ function M.update_mouse(key, actionx, actiony, dx, dy) -- should call this from 
 	-- If dragging, don't check for collisions or anything, just drag.
 	-- When the mouse button is released the drag will end and things will go back to normal
 	-- 			I might want to update mouse again after mouse release . . .
+	if type(key) == "table" then key = key[keyName] end
 	local hit = false
 
 	if btns[key].dragging then
@@ -237,6 +251,7 @@ function M.update_mouse(key, actionx, actiony, dx, dy) -- should call this from 
 end
 
 function M.on_input(key, action_id, action)
+	key = key[keyName]
 	if not action_id then -- Mouse movement
 		M.update_mouse(key, action.x, action.y, action.dx, action.dy)
 		-- if you wish to tell if the mouse is over a button in your gui script you can call M.update_mouse directly and get the return value.
@@ -270,30 +285,36 @@ function M.on_input(key, action_id, action)
 end
 
 function M.activate_btn(key, button)
+	key = key[keyName]
 	btns[key].active[button] = btns[key].all[button]
 end
 
 function M.deactivate_btn(key, button)
+	key = key[keyName]
 	local b = btns[key].all[button]
 	btns[key].active[button] = nil
 	if b.hovered then b:unhover() end
 end
 
 function M.btn_set_pressfunc(key, button, func)
+	key = key[keyName]
 	btns[key].all[button].pressfunc = func
 end
 
 function M.btn_set_releasefunc(key, button, func)
+	key = key[keyName]
 	btns[key].all[button].releasefunc = func
 end
 
 function M.btn_set_text(key, button, text)
+	key = key[keyName]
 	local b = btns[key].all[button]
 	b.text = text
 	gui.set_text(b.textnode, text)
 end
 
 function M.btn_set_neighbors(key, button, up, down, left, right)
+	key = key[keyName]
 	local b = btns[key].all[button]
 	if up then b.neighbor_up = btns[key].all[up] end
 	if down then b.neighbor_down = btns[key].all[down] end
@@ -303,6 +324,7 @@ end
 
 -- Button List, Auto-set Neighbors - Set the buttons' neighbors so they are a wrapping list.
 function M.btnlist_autoset_neighbors(key, list, vertical)
+	key = key[keyName]
 	local reflist = {}
 	for i, v in ipairs(list) do
 		table.insert(reflist, btns[key].all[v])
@@ -349,6 +371,7 @@ local function newBaseWidget(key, name, active, pressfunc, releasefunc)
 end
 
 function M.newButton(key, name, active, pressfunc, releasefunc)
+	if type(key) == "table" then key = key[keyName] end
 	local button = newBaseWidget(key, name, active, pressfunc, releasefunc)
 	button.textnode = gui.get_node(name .. "/text")
 	button.text = gui.get_text(button.textnode)
@@ -357,6 +380,7 @@ function M.newButton(key, name, active, pressfunc, releasefunc)
 end
 
 function M.newCheckbox(key, name, active, pressfunc, releasefunc, checked)
+	if type(key) == "table" then key = key[keyName] end
 	local button = newBaseWidget(key, name, active, pressfunc, releasefunc)
 	button.checked = checked
 	button.textnode = gui.get_node(name .. "/text")
@@ -367,6 +391,7 @@ function M.newCheckbox(key, name, active, pressfunc, releasefunc, checked)
 end
 
 function M.newRadioButtonGroup(key, namesList, active, pressfunc, releasefunc, checkedName)
+	if type(key) == "table" then key = key[keyName] end
 	local buttons = {}
 	for i, name in ipairs(namesList) do
 		local button = newBaseWidget(key, name, active, pressfunc, releasefunc)
@@ -387,6 +412,7 @@ function M.newRadioButtonGroup(key, namesList, active, pressfunc, releasefunc, c
 end
 
 function M.newSlider(key, name, active, pressfunc, releasefunc, dragfunc, horiz, range, value)
+	if type(key) == "table" then key = key[keyName] end
 	local button = newBaseWidget(key, name, active, pressfunc, releasefunc)
 	button.origin = gui.get_position(button.node)
 	button.pos = vmath.vector3(button.origin)
@@ -408,6 +434,7 @@ function M.newSlider(key, name, active, pressfunc, releasefunc, dragfunc, horiz,
 end
 
 function M.newScrollBar(key, name, active, pressfunc, releasefunc, dragfunc, horiz, length, value, width)
+	if type(key) == "table" then key = key[keyName] end
 	local button = newBaseWidget(key, name, active, pressfunc, releasefunc)
 	button.origin = gui.get_position(button.node)
 	button.pos = vmath.vector3(button.origin)
@@ -433,6 +460,7 @@ function M.newScrollBar(key, name, active, pressfunc, releasefunc, dragfunc, hor
 end
 
 function M.newScrollBox(key, name, childname, active, horiz, scrollbarname)
+	if type(key) == "table" then key = key[keyName] end
 	local box = newBaseWidget(key, name, active)
 	box.horiz = horiz
 	box.child = gui.get_node(childname)
@@ -455,6 +483,7 @@ end
 --		Activate_btn() will enable the buttons if they are disabled
 --		Use theme.group_enable() for custom animations, etc.
 function M.group_enable(key, name)
+	key = key[keyName]
 	local g = btns[key].groups[name]
 	gui.set_enabled(g.node, true)
 	theme.group_enable(g)
@@ -466,6 +495,7 @@ end
 
 -- It's up to the theme hide the node or not.
 function M.group_disable(key, name)
+	key = key[keyName]
 	local g = btns[key].groups[name]
 	theme.group_disable(g)
 	for i, v in ipairs(g.children) do
@@ -475,11 +505,13 @@ end
 
 -- Convenience function to disable one group and enable another
 function M.group_swap(key, from, to)
+	key = key[keyName]
 	M.group_disable(key, from)
 	M.group_enable(key, to)
 end
 
 function M.new_group(key, name, rootnode, children, autoset_btns_vert, autoset_btns_horiz, disable)
+	key = key[keyName]
 	autoset_btns_vert = autoset_btns_vert or false
 	autoset_btns_horiz = autoset_btns_horiz or false
 	disable = disable or false
