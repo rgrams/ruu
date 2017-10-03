@@ -83,6 +83,10 @@ local function prevval(t, i) -- looping, used for setting up button list neighbo
 	return t[i]
 end
 
+local function clamp(x, max, min) -- much more legible than math.min(math.max(x, min), max)
+	return x > max and max or (x < min and min or x)
+end
+
 -- ---------------------------------------------------------------------------------
 --|					  PRIVATE FUNCTIONS 3: WIDGET BEHAVIOR							|
 -- ---------------------------------------------------------------------------------
@@ -168,10 +172,10 @@ end
 
 local function drag_slider(self, dx, dy)
 	if self.horiz then
-		self.pos.x = math.max(self.origin.x, math.min(self.origin.x + self.range, self.pos.x + dx))
+		self.pos.x = clamp(self.pos.x + dx, self.origin.x + self.range, self.origin.x)
 		self.value = (self.pos.x - self.origin.x)/self.range
 	else
-		self.pos.y = math.max(self.origin.y, math.min(self.origin.y + self.range, self.pos.y + dy))
+		self.pos.y = clamp(self.pos.y + dy, self.origin.y + self.range, self.origin.y)
 		self.value = (self.pos.y - self.origin.y)/self.range
 	end
 	gui.set_position(self.node, self.pos)
@@ -180,12 +184,12 @@ end
 
 local function drag_scrollBar(self, dx, dy, dontfire)
 	if self.horiz then
-		self.pos.x = math.max(self.origin.x + self.width/2, math.min(self.origin.x + self.width/2 + self.range, self.pos.x + dx))
+		self.pos.x = clamp(self.pos.x + dx, self.origin.x + self.range + self.width/2, self.origin.x + self.width/2)
 		if self.range > 0 then self.value = (self.pos.x - self.origin.x - self.width/2)/self.range
 		else self.value = 0
 		end
 	else
-		self.pos.y = math.max(self.origin.y + self.width/2, math.min(self.origin.y + self.width/2 + self.range, self.pos.y + dy))
+		self.pos.y = clamp(self.pos.y + dy, self.origin.y + self.range + self.width/2, self.origin.y + self.width/2)
 		if self.range > 0 then self.value = (self.pos.y - self.origin.y - self.width/2)/self.range
 		else self.value = 0
 		end
