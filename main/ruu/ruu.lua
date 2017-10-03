@@ -37,16 +37,11 @@ local btns = {} -- FORMAT = btns[key] = {all = {}, active = {}, groups = {}, cur
 local function hover_button(self)
 	self.hovered = true
 	theme.hover_btn(self)
-	if btns[self.key].cur_hover and btns[self.key].cur_hover ~= self then
-		btns[self.key].cur_hover:unhover()
-	end
-	btns[self.key].cur_hover = self
 end
 
 local function unhover_button(self)
 	self.hovered = false
 	theme.unhover_btn(self)
-	btns[self.key].cur_hover = nil
 	if self.pressed then self:release(true) end
 end
 
@@ -143,7 +138,6 @@ local function drag_scrollBar(self, dx, dy, dontfire)
 		end
 	end
 	gui.set_position(self.node, self.pos)
-	print(self.value)
 	if self.dragfunc and not dontfire then self.dragfunc(self.value) end
 end
 
@@ -177,16 +171,6 @@ local function button_hover_adjacent(self, dirstring) -- keyboard/gamepad naviga
 	if newbtn then
 		newbtn:hover()
 	end
-end
-
-local function hit_test(self, posx, posy) -- ######################  Should change this to only do the hit test, not change anything
-	local hit = gui.pick_node(self.node, posx, posy)
-	if hit and not self.hovered then
-		self:hover()
-	elseif not hit and self.hovered then
-		if mode == M.MODE_MOUSE then self:unhover()	end
-	end
-	return hit
 end
 
 local function nextval(t, i) -- used for setting up button list neighbors
@@ -225,10 +209,19 @@ function M.update_mouse(key, actionx, actiony, dx, dy) -- should call this from 
 		btns[key].cur_hover:drag(dx, dy)
 		local hit = true
 	else
-		for k, v in pairs(btns[key].active) do -- check all active widgets for a hit
-			if hit_test(v, actionx, actiony) then
+		for k, v in pairs(btns[key].active) do -- hit test all active widgets
+			if gui.pick_node(v.node, actionx, actiony) then
+				if btns[key].cur_hover and v ~= btns[key].cur_hover then
+					btns[key].cur_hover:unhover()
+				end
+				if not v.hovered then
+					v:hover()
+				end
 				hit = true
 				btns[key].cur_mouse_hover = v
+				btns[key].cur_hover = v
+			elseif v.hovered and mode == M.MODE_MOUSE then
+				v:unhover()
 			end
 		end
 		if not hit then
@@ -261,11 +254,15 @@ function M.on_input(key, action_id, action)
 		end
 	elseif action_id == M.input_scrollUp then
 		if action.pressed then
-			if btns[key].cur_hover.drag then btns[key].cur_hover:drag(M.input_scroll_dist, M.input_scroll_dist) end
+			if btns[key].cur_hover and btns[key].cur_hover.drag then
+				btns[key].cur_hover:drag(M.input_scroll_dist, M.input_scroll_dist)
+			end
 		end
 	elseif action_id == M.input_scrollDown then
 		if action.pressed then
-			if btns[key].cur_hover.drag then btns[key].cur_hover:drag(-M.input_scroll_dist, -M.input_scroll_dist) end
+			if btns[key].cur_hover and btns[key].cur_hover.drag then
+				btns[key].cur_hover:drag(-M.input_scroll_dist, -M.input_scroll_dist)
+			end
 		end
 	elseif M.inputKeyDirs[action_id] and action.pressed then -- Keyboard/Gamepad navigation
 		if btns[key].cur_hover then btns[key].cur_hover:hover_adj(M.inputKeyDirs[action_id]) end
