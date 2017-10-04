@@ -4,19 +4,19 @@ local ruu = require "main.ruu.ruu"
 
 function init(self)
 	--msg.post(".", "acquire_input_focus")
-	ruu:newButton("button2", true, nil, function() print("Button 2 released") end)
-	ruu:newButton("button1", true, nil, function() print("Button 1 released") end)
-	ruu:newCheckbox("checkbox1", true, nil, function(checked) print("Checkbox 1 released, checked = ", checked) end, false)
-	ruu:newCheckbox("checkbox2", true, nil, function(checked) print("Checkbox 2 released, checked = ", checked) end, true)
-	ruu:newCheckbox("checkbox3", true, nil, function(checked) print("Checkbox 3 released, checked = ", checked) end, true)
+	ruu:new_button("button2", true, nil, function() print("Button 2 released") end)
+	ruu:new_button("button1", true, nil, function() print("Button 1 released") end)
+	ruu:new_toggleButton("toggleButton1", true, nil, function(checked) print("toggleButton 1 released, checked = ", checked) end, false)
+	ruu:new_toggleButton("toggleButton2", true, nil, function(checked) print("toggleButton 2 released, checked = ", checked) end, true)
+	ruu:new_toggleButton("toggleButton3", true, nil, function(checked) print("toggleButton 3 released, checked = ", checked) end, true)
 	local radioButtons = {"radBtn1", "radBtn2", "radBtn3", "radBtn4", "radBtn5"}
-	ruu:newRadioButtonGroup(radioButtons, true, nil, function(name) print("Radio Button ", name, " checked.") end, "radBtn4")
+	ruu:new_radioButtonGroup(radioButtons, true, nil, function(name) print("Radio Button ", name, " checked.") end, "radBtn4")
 
-	ruu:newSlider("slider1", true, nil, nil, function(fraction) print("Slider - ", fraction) end, nil, 0, 0.3)
-	ruu:newSlider("scrollbar1", true, nil, nil, function(fraction) print("Scrollbar - ", fraction) end, 200, 100, 1, true)
+	ruu:new_slider("slider1", true, nil, nil, function(fraction) print("Slider - ", fraction) end, nil, 0, 0.3)
+	ruu:new_slider("scrollbar1", true, nil, nil, function(fraction) print("Scrollbar - ", fraction) end, 200, 100, 1, true)
 
-	ruu:newScrollBox("scrollbox", "scrollbox_child", true, false, "scrollbox_scrollbar")
-	local button = ruu:newCheckbox("checkBox_in_scrollBox", true, nil, function(checked) print("checkBox_in_scrollBox released, checked = ", checked) end, false)
+	ruu:new_scrollBox("scrollbox", "scrollbox_child", true, false, "scrollbox_scrollbar")
+	local button = ruu:new_toggleButton("toggleButton_in_scrollBox", true, nil, function(checked) print("toggleButton_in_scrollBox released, checked = ", checked) end, false)
 	button.stencilNode = gui.get_node("scrollbox/body")
 end
 

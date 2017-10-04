@@ -20,7 +20,7 @@ function M.init_btn(self)
 	gui.set_color(self.node, normalcolor)
 end
 
-function M.init_checkbox(self)
+function M.init_toggleButton(self)
 	gui.set_color(self.node, normalcolor)
 	self.checknode = gui.get_node(self.name .. "/check")
 	gui.set_color(self.checknode, self.checked and checkedColor or uncheckedColor)
@@ -54,7 +54,7 @@ function M.release_btn(self)
 	end
 end
 
-function M.release_checkbox(self)
+function M.release_toggleButton(self)
 	gui.set_color(self.checknode, self.checked and checkedColor or uncheckedColor)
 	if self.hovered then gui.set_color(self.node, hovercolor) end
 	gui.set_position(self.textnode, gui.get_position(self.textnode) - press_text_offset)

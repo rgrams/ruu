@@ -413,12 +413,12 @@ nodes {
     w: 1.0
   }
   type: TYPE_TEMPLATE
-  id: "checkbox1"
+  id: "toggleButton1"
   parent: "panel1"
   layer: ""
   inherit_alpha: false
   alpha: 1.0
-  template: "/main/ruu/template_checkbox.gui"
+  template: "/main/ruu/template_toggleButton.gui"
   template_node_child: false
 }
 nodes {
@@ -455,12 +455,12 @@ nodes {
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
   texture: ""
-  id: "checkbox1/body"
+  id: "toggleButton1/body"
   xanchor: XANCHOR_NONE
   yanchor: YANCHOR_NONE
   pivot: PIVOT_CENTER
   adjust_mode: ADJUST_MODE_FIT
-  parent: "checkbox1"
+  parent: "toggleButton1"
   layer: "foreground"
   inherit_alpha: true
   slice9 {
@@ -509,9 +509,9 @@ nodes {
   }
   type: TYPE_TEXT
   blend_mode: BLEND_MODE_ALPHA
-  text: "Checkbox"
+  text: "toggleButton1"
   font: "test font"
-  id: "checkbox1/text"
+  id: "toggleButton1/text"
   xanchor: XANCHOR_LEFT
   yanchor: YANCHOR_NONE
   pivot: PIVOT_W
@@ -529,12 +529,13 @@ nodes {
   }
   adjust_mode: ADJUST_MODE_FIT
   line_break: true
-  parent: "checkbox1/body"
+  parent: "toggleButton1/body"
   layer: "text"
   inherit_alpha: false
   alpha: 1.0
   outline_alpha: 0.0
   shadow_alpha: 0.0
+  overridden_fields: 8
   template_node_child: true
   text_leading: 1.0
   text_tracking: 0.0
@@ -573,12 +574,12 @@ nodes {
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
   texture: ""
-  id: "checkbox1/check"
+  id: "toggleButton1/check"
   xanchor: XANCHOR_LEFT
   yanchor: YANCHOR_NONE
   pivot: PIVOT_CENTER
   adjust_mode: ADJUST_MODE_FIT
-  parent: "checkbox1/body"
+  parent: "toggleButton1/body"
   layer: "foreground"
   inherit_alpha: true
   slice9 {
@@ -626,12 +627,12 @@ nodes {
     w: 1.0
   }
   type: TYPE_TEMPLATE
-  id: "checkbox2"
+  id: "toggleButton2"
   parent: "panel1"
   layer: ""
   inherit_alpha: false
   alpha: 1.0
-  template: "/main/ruu/template_checkbox.gui"
+  template: "/main/ruu/template_toggleButton.gui"
   template_node_child: false
 }
 nodes {
@@ -668,12 +669,12 @@ nodes {
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
   texture: ""
-  id: "checkbox2/body"
+  id: "toggleButton2/body"
   xanchor: XANCHOR_NONE
   yanchor: YANCHOR_NONE
   pivot: PIVOT_CENTER
   adjust_mode: ADJUST_MODE_FIT
-  parent: "checkbox2"
+  parent: "toggleButton2"
   layer: "foreground"
   inherit_alpha: true
   slice9 {
@@ -722,9 +723,9 @@ nodes {
   }
   type: TYPE_TEXT
   blend_mode: BLEND_MODE_ALPHA
-  text: "Checkbox"
+  text: "toggleButton2"
   font: "test font"
-  id: "checkbox2/text"
+  id: "toggleButton2/text"
   xanchor: XANCHOR_LEFT
   yanchor: YANCHOR_NONE
   pivot: PIVOT_W
@@ -742,12 +743,13 @@ nodes {
   }
   adjust_mode: ADJUST_MODE_FIT
   line_break: true
-  parent: "checkbox2/body"
+  parent: "toggleButton2/body"
   layer: "text"
   inherit_alpha: false
   alpha: 1.0
   outline_alpha: 0.0
   shadow_alpha: 0.0
+  overridden_fields: 8
   template_node_child: true
   text_leading: 1.0
   text_tracking: 0.0
@@ -786,12 +788,12 @@ nodes {
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
   texture: ""
-  id: "checkbox2/check"
+  id: "toggleButton2/check"
   xanchor: XANCHOR_LEFT
   yanchor: YANCHOR_NONE
   pivot: PIVOT_CENTER
   adjust_mode: ADJUST_MODE_FIT
-  parent: "checkbox2/body"
+  parent: "toggleButton2/body"
   layer: "foreground"
   inherit_alpha: true
   slice9 {
@@ -839,12 +841,12 @@ nodes {
     w: 1.0
   }
   type: TYPE_TEMPLATE
-  id: "checkbox3"
+  id: "toggleButton3"
   parent: "panel1"
   layer: ""
   inherit_alpha: false
   alpha: 1.0
-  template: "/main/ruu/template_checkbox.gui"
+  template: "/main/ruu/template_toggleButton.gui"
   template_node_child: false
 }
 nodes {
@@ -881,12 +883,12 @@ nodes {
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
   texture: ""
-  id: "checkbox3/body"
+  id: "toggleButton3/body"
   xanchor: XANCHOR_NONE
   yanchor: YANCHOR_NONE
   pivot: PIVOT_CENTER
   adjust_mode: ADJUST_MODE_FIT
-  parent: "checkbox3"
+  parent: "toggleButton3"
   layer: "foreground"
   inherit_alpha: true
   slice9 {
@@ -935,9 +937,9 @@ nodes {
   }
   type: TYPE_TEXT
   blend_mode: BLEND_MODE_ALPHA
-  text: "Checkbox"
+  text: "toggleButton3"
   font: "test font"
-  id: "checkbox3/text"
+  id: "toggleButton3/text"
   xanchor: XANCHOR_LEFT
   yanchor: YANCHOR_NONE
   pivot: PIVOT_W
@@ -955,12 +957,13 @@ nodes {
   }
   adjust_mode: ADJUST_MODE_FIT
   line_break: true
-  parent: "checkbox3/body"
+  parent: "toggleButton3/body"
   layer: "text"
   inherit_alpha: false
   alpha: 1.0
   outline_alpha: 0.0
   shadow_alpha: 0.0
+  overridden_fields: 8
   template_node_child: true
   text_leading: 1.0
   text_tracking: 0.0
@@ -999,12 +1002,12 @@ nodes {
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
   texture: ""
-  id: "checkbox3/check"
+  id: "toggleButton3/check"
   xanchor: XANCHOR_LEFT
   yanchor: YANCHOR_NONE
   pivot: PIVOT_CENTER
   adjust_mode: ADJUST_MODE_FIT
-  parent: "checkbox3/body"
+  parent: "toggleButton3/body"
   layer: "foreground"
   inherit_alpha: true
   slice9 {
@@ -2699,12 +2702,12 @@ nodes {
     w: 1.0
   }
   type: TYPE_TEMPLATE
-  id: "checkBox_in_scrollBox"
+  id: "toggleButton_in_scrollBox"
   parent: "scrollbox_child"
   layer: ""
   inherit_alpha: true
   alpha: 1.0
-  template: "/main/ruu/template_checkbox.gui"
+  template: "/main/ruu/template_toggleButton.gui"
   template_node_child: false
 }
 nodes {
@@ -2741,12 +2744,12 @@ nodes {
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
   texture: ""
-  id: "checkBox_in_scrollBox/body"
+  id: "toggleButton_in_scrollBox/body"
   xanchor: XANCHOR_NONE
   yanchor: YANCHOR_NONE
   pivot: PIVOT_CENTER
   adjust_mode: ADJUST_MODE_FIT
-  parent: "checkBox_in_scrollBox"
+  parent: "toggleButton_in_scrollBox"
   layer: "foreground"
   inherit_alpha: true
   slice9 {
@@ -2795,9 +2798,9 @@ nodes {
   }
   type: TYPE_TEXT
   blend_mode: BLEND_MODE_ALPHA
-  text: "Checkbox"
+  text: "toggleButton"
   font: "test font"
-  id: "checkBox_in_scrollBox/text"
+  id: "toggleButton_in_scrollBox/text"
   xanchor: XANCHOR_LEFT
   yanchor: YANCHOR_NONE
   pivot: PIVOT_W
@@ -2815,7 +2818,7 @@ nodes {
   }
   adjust_mode: ADJUST_MODE_FIT
   line_break: true
-  parent: "checkBox_in_scrollBox/body"
+  parent: "toggleButton_in_scrollBox/body"
   layer: "text"
   inherit_alpha: false
   alpha: 1.0
@@ -2859,12 +2862,12 @@ nodes {
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
   texture: ""
-  id: "checkBox_in_scrollBox/check"
+  id: "toggleButton_in_scrollBox/check"
   xanchor: XANCHOR_LEFT
   yanchor: YANCHOR_NONE
   pivot: PIVOT_CENTER
   adjust_mode: ADJUST_MODE_FIT
-  parent: "checkBox_in_scrollBox/body"
+  parent: "toggleButton_in_scrollBox/body"
   layer: "foreground"
   inherit_alpha: true
   slice9 {

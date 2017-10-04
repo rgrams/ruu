@@ -96,7 +96,7 @@ nodes {
   }
   type: TYPE_TEXT
   blend_mode: BLEND_MODE_ALPHA
-  text: "Checkbox"
+  text: "toggleButton"
   font: "test font"
   id: "text"
   xanchor: XANCHOR_LEFT

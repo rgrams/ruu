@@ -39,7 +39,8 @@ local mode = M.MODE_KEYBOARD
 --| 					PRIVATE FUNCTIONS 1: SETUP & KEYS							|
 -- ---------------------------------------------------------------------------------
 
-local btns = {} -- FORMAT: btns[key] = new_context_table()
+-- the main table that stores all widgets and other data.
+local wgts = {} -- FORMAT: wgts[key] = new_context_table()
 -- Note: cur_hover stores a reference to the button "object"/table, not the button name
 
 local function new_context_table()
@@ -58,17 +59,17 @@ function M.getkey()
 	local k = {}
 	keyCount = keyCount + 1
 	k[keyName] = keyCount
-	btns[keyCount] = new_context_table()
+	wgts[keyCount] = new_context_table()
 	return k
 end
 
 -- make default key and context
 M[keyName] = 1
-btns[M[keyName]] = new_context_table()
+wgts[M[keyName]] = new_context_table()
 
 local function verify_key(key, ctxString)
 	ctxString = ctxString or ""
-	if not btns[key] then
+	if not wgts[key] then
 		error("RUU -" .. ctxString .. "- ERROR: Invalid key. Call functions with a colon (ruu:func()) or with a key made with ruu.getkey(). (i.e. ruu.func(key)).")
 	end
 end
@@ -98,6 +99,7 @@ end
 --|					  PRIVATE FUNCTIONS 3: WIDGET BEHAVIOR							|
 -- ---------------------------------------------------------------------------------
 
+-- Button
 local function hover_button(self)
 	self.hovered = true
 	theme.hover_btn(self)
@@ -115,13 +117,6 @@ local function press_button(self)
 	if self.pressfunc then self.pressfunc() end
 end
 
-local function press_slider(self)
-	self.pressed = true
-	theme.press_btn(self)
-	if self.pressfunc then self.pressfunc() end
-	btns[self.key].dragging = btns[self.key].dragging + 1
-end
-
 local function release_button(self, dontfire) -- default is to fire
 	if self.pressed and self.hovered then
 		theme.release_btn(self)
@@ -132,19 +127,28 @@ local function release_button(self, dontfire) -- default is to fire
 	end
 end
 
-local function release_checkbox(self, dontfire) -- default is to fire
+local function button_hover_adjacent(self, dirstring) -- keyboard/gamepad navigation
+	local newbtn = self["neighbor_" .. dirstring]
+	if newbtn then
+		newbtn:hover()
+	end
+end
+
+-- Toggle Button
+local function release_toggleButton(self, dontfire) -- default is to fire
 	if self.pressed and self.hovered then
 		self.pressed = false
 		if not dontfire then
 			self.checked = not self.checked
 			if self.releasefunc then self.releasefunc(self.checked) end
 		end
-		theme.release_checkbox(self)
+		theme.release_toggleButton(self)
 	else
 		self.pressed = false
 	end
 end
 
+-- Radio Button
 local function uncheck_radioButton(self)
 	if self.checked then theme.uncheck_radioButton(self) end
 	self.checked = false
@@ -168,12 +172,20 @@ local function release_radioButton(self, dontfire) -- default is to fire
 	end
 end
 
+-- Slider
+local function press_slider(self)
+	self.pressed = true
+	theme.press_btn(self)
+	if self.pressfunc then self.pressfunc() end
+	wgts[self.key].dragging = wgts[self.key].dragging + 1
+end
+
 local function release_slider(self, dontfire) -- default is to fire
 	if self.pressed and self.hovered then
 		theme.release_btn(self)
 		self.pressed = false
 		if self.releasefunc and not dontfire then self.releasefunc() end
-		btns[self.key].dragging = btns[self.key].dragging - 1
+		wgts[self.key].dragging = wgts[self.key].dragging - 1
 	end
 end
 
@@ -203,22 +215,7 @@ local function slider_setHandleLength(self, newLength)
 	end
 end
 
-local function scrollBox_scroll(self, percent)
-	percent = 1 - percent
-	local pos = gui.get_position(self.child)
-	if self.horiz then pos.x = self.viewLength/2 + self.scrollLength * percent
-	else pos.y = self.viewLength/2 + self.scrollLength * percent
-	end
-	gui.set_position(self.child, pos)
-end
-
-local function button_hover_adjacent(self, dirstring) -- keyboard/gamepad navigation
-	local newbtn = self["neighbor_" .. dirstring]
-	if newbtn then
-		newbtn:hover()
-	end
-end
-
+-- Scroll Box
 local function scrollBox_hover(self)
 	self.hovered = true
 end
@@ -228,11 +225,20 @@ local function scrollBox_unhover(self)
 end
 
 local function scrollBox_press(self)
-	btns[self.key].dragging = btns[self.key].dragging + 1
+	wgts[self.key].dragging = wgts[self.key].dragging + 1
 end
 
 local function scrollBox_release(self)
-	btns[self.key].dragging = btns[self.key].dragging - 1
+	wgts[self.key].dragging = wgts[self.key].dragging - 1
+end
+
+local function scrollBox_scroll(self, percent)
+	percent = 1 - percent
+	local pos = gui.get_position(self.child)
+	if self.horiz then pos.x = self.viewLength/2 + self.scrollLength * percent
+	else pos.y = self.viewLength/2 + self.scrollLength * percent
+	end
+	gui.set_position(self.child, pos)
 end
 
 -- ---------------------------------------------------------------------------------
@@ -246,24 +252,24 @@ function M.update_mouse(key, actionx, actiony, dx, dy) -- should call this from 
 	if type(key) == "table" then key = key[keyName] end
 	local hitAny = false
 
-	if btns[key].dragging > 0 then
-		for i, v in ipairs(btns[key].hovered) do if v.drag then v:drag(dx, dy) end end
+	if wgts[key].dragging > 0 then
+		for i, v in ipairs(wgts[key].hovered) do if v.drag then v:drag(dx, dy) end end
 		local hitAny = true
 	else
-		for k, v in pairs(btns[key].active) do -- hit test all active widgets
+		for k, v in pairs(wgts[key].active) do -- hit test all active widgets
 			if gui.pick_node(v.node, actionx, actiony) and (not v.stencilNode and true or gui.pick_node(v.stencilNode, actionx, actiony)) then
 				-- hit
 				hitAny = true
 				if not v.hovered then
 					print("Hover")
-					table.insert(btns[key].hovered, v) -- add to hovered list
+					table.insert(wgts[key].hovered, v) -- add to hovered list
 					v:hover()
 				end
 			elseif v.hovered then
-				for i, btn in ipairs(btns[key].hovered) do
+				for i, btn in ipairs(wgts[key].hovered) do
 					if btn == v then
 						print("Unhover")
-						table.remove(btns[key].hovered, i)
+						table.remove(wgts[key].hovered, i)
 						v:unhover()
 					end
 				end
@@ -280,67 +286,67 @@ function M.on_input(key, action_id, action)
 		-- if you wish to tell if the mouse is over a button in your gui script you can call M.update_mouse directly and get the return value.
 	elseif action_id == M.INPUT_CLICK then -- Mouse click
 		if action.pressed then
-			for i, v in ipairs(btns[key].hovered) do v:press() end
+			for i, v in ipairs(wgts[key].hovered) do v:press() end
 		elseif action.released then
-			for i, v in ipairs(btns[key].hovered) do v:release() end
+			for i, v in ipairs(wgts[key].hovered) do v:release() end
 		end
 	elseif action_id == M.INPUT_ENTER then -- Keyboard/Gamepad enter
 		if action.pressed then
-			for i, v in ipairs(btns[key].hovered) do v:press() end
+			for i, v in ipairs(wgts[key].hovered) do v:press() end
 		elseif action.released then
-			for i, v in ipairs(btns[key].hovered) do v:release() end
+			for i, v in ipairs(wgts[key].hovered) do v:release() end
 		end
 	elseif action_id == M.INPUT_SCROLLUP then
 		if action.pressed then
-			for i, v in ipairs(btns[key].hovered) do if v.drag then v:drag(M.INPUT_SCROLL_DIST, M.INPUT_SCROLL_DIST) end end
+			for i, v in ipairs(wgts[key].hovered) do if v.drag then v:drag(M.INPUT_SCROLL_DIST, M.INPUT_SCROLL_DIST) end end
 			M.update_mouse(key, action.x, action.y, action.dx, action.dy)
 		end
 	elseif action_id == M.INPUT_SCROLLDOWN then
 		if action.pressed then
-			for i, v in ipairs(btns[key].hovered) do if v.drag then v:drag(-M.INPUT_SCROLL_DIST, -M.INPUT_SCROLL_DIST) end end
+			for i, v in ipairs(wgts[key].hovered) do if v.drag then v:drag(-M.INPUT_SCROLL_DIST, -M.INPUT_SCROLL_DIST) end end
 			M.update_mouse(key, action.x, action.y, action.dx, action.dy)
 		end
 	elseif M.INPUT_DIRKEY[action_id] and action.pressed then -- Keyboard/Gamepad navigation
-		if btns[key].cur_hover then btns[key].cur_hover:hover_adj(M.INPUT_DIRKEY[action_id]) end
+		if wgts[key].cur_hover then wgts[key].cur_hover:hover_adj(M.INPUT_DIRKEY[action_id]) end
 	end
 end
 
 function M.activate_btn(key, button)
 	key = key[keyName]
-	btns[key].active[button] = btns[key].all[button]
+	wgts[key].active[button] = wgts[key].all[button]
 end
 
 function M.deactivate_btn(key, button)
 	key = key[keyName]
-	local b = btns[key].all[button]
-	btns[key].active[button] = nil
+	local b = wgts[key].all[button]
+	wgts[key].active[button] = nil
 	if b.hovered then b:unhover() end
 end
 
 function M.btn_set_pressfunc(key, button, func)
 	key = key[keyName]
-	btns[key].all[button].pressfunc = func
+	wgts[key].all[button].pressfunc = func
 end
 
 function M.btn_set_releasefunc(key, button, func)
 	key = key[keyName]
-	btns[key].all[button].releasefunc = func
+	wgts[key].all[button].releasefunc = func
 end
 
 function M.btn_set_text(key, button, text)
 	key = key[keyName]
-	local b = btns[key].all[button]
+	local b = wgts[key].all[button]
 	b.text = text
 	gui.set_text(b.textnode, text)
 end
 
 function M.btn_set_neighbors(key, button, up, down, left, right)
 	key = key[keyName]
-	local b = btns[key].all[button]
-	if up then b.neighbor_up = btns[key].all[up] end
-	if down then b.neighbor_down = btns[key].all[down] end
-	if left then b.neighbor_left = btns[key].all[left] end
-	if right then b.neighbor_right = btns[key].all[right] end
+	local b = wgts[key].all[button]
+	if up then b.neighbor_up = wgts[key].all[up] end
+	if down then b.neighbor_down = wgts[key].all[down] end
+	if left then b.neighbor_left = wgts[key].all[left] end
+	if right then b.neighbor_right = wgts[key].all[right] end
 end
 
 -- Button List, Auto-set Neighbors - Set the buttons' neighbors so they are a wrapping list.
@@ -348,7 +354,7 @@ function M.btnlist_autoset_neighbors(key, list, vertical)
 	key = key[keyName]
 	local reflist = {}
 	for i, v in ipairs(list) do
-		table.insert(reflist, btns[key].all[v])
+		table.insert(reflist, wgts[key].all[v])
 	end
 	if vertical then -- vertical list
 		for i, b in ipairs(reflist) do
@@ -363,8 +369,8 @@ function M.btnlist_autoset_neighbors(key, list, vertical)
 	end
 end
 
-local function newBaseWidget(key, name, active, pressfunc, releasefunc)
-	verify_key(key, "newBaseWidget")
+local function new_baseWidget(key, name, active, pressfunc, releasefunc)
+	verify_key(key, "new_baseWidget")
 	active = active or false
 	local widget = {
 		name = name,
@@ -386,36 +392,36 @@ local function newBaseWidget(key, name, active, pressfunc, releasefunc)
 		neighbor_prev = nil,
 		hover_adj = button_hover_adjacent
 	}
-	btns[key].all[name] = widget
-	if active then btns[key].active[name] = widget end
+	wgts[key].all[name] = widget
+	if active then wgts[key].active[name] = widget end
 	return widget
 end
 
-function M.newButton(key, name, active, pressfunc, releasefunc)
+function M.new_button(key, name, active, pressfunc, releasefunc)
 	if type(key) == "table" then key = key[keyName] end
-	local button = newBaseWidget(key, name, active, pressfunc, releasefunc)
+	local button = new_baseWidget(key, name, active, pressfunc, releasefunc)
 	button.textnode = gui.get_node(name .. "/text")
 	button.text = gui.get_text(button.textnode)
 	theme.init_btn(button)
 	return button
 end
 
-function M.newCheckbox(key, name, active, pressfunc, releasefunc, checked)
+function M.new_toggleButton(key, name, active, pressfunc, releasefunc, checked)
 	if type(key) == "table" then key = key[keyName] end
-	local button = newBaseWidget(key, name, active, pressfunc, releasefunc)
+	local button = new_baseWidget(key, name, active, pressfunc, releasefunc)
 	button.checked = checked
 	button.textnode = gui.get_node(name .. "/text")
 	button.text = gui.get_text(button.textnode)
-	button.release = release_checkbox
-	theme.init_checkbox(button)
+	button.release = release_toggleButton
+	theme.init_toggleButton(button)
 	return button
 end
 
-function M.newRadioButtonGroup(key, namesList, active, pressfunc, releasefunc, checkedName)
+function M.new_radioButtonGroup(key, namesList, active, pressfunc, releasefunc, checkedName)
 	if type(key) == "table" then key = key[keyName] end
 	local buttons = {}
 	for i, name in ipairs(namesList) do
-		local button = newBaseWidget(key, name, active, pressfunc, releasefunc)
+		local button = new_baseWidget(key, name, active, pressfunc, releasefunc)
 		button.textnode = gui.get_node(name .. "/text")
 		button.text = gui.get_text(button.textnode)
 		button.checked = name == checkedName
@@ -432,9 +438,9 @@ function M.newRadioButtonGroup(key, namesList, active, pressfunc, releasefunc, c
 	end
 end
 
-function M.newSlider(key, name, active, pressfunc, releasefunc, dragfunc, length, handleLength, startFraction, autoResizeHandle)
+function M.new_slider(key, name, active, pressfunc, releasefunc, dragfunc, length, handleLength, startFraction, autoResizeHandle)
 	if type(key) == "table" then key = key[keyName] end
-	local button = newBaseWidget(key, name, active, pressfunc, releasefunc)
+	local button = new_baseWidget(key, name, active, pressfunc, releasefunc)
 	button.rootNode = gui.get_node(name .. "/root")
 	button.endpointNode = gui.get_node(name .. "/endpoint")
 	local rot = math.rad(gui.get_rotation(button.rootNode).z)
@@ -464,9 +470,9 @@ function M.newSlider(key, name, active, pressfunc, releasefunc, dragfunc, length
 	return button
 end
 
-function M.newScrollBox(key, name, childname, active, horiz, scrollbarname)
+function M.new_scrollBox(key, name, childname, active, horiz, scrollbarname)
 	if type(key) == "table" then key = key[keyName] end
-	local box = newBaseWidget(key, name, active)
+	local box = new_baseWidget(key, name, active)
 	box.horiz = horiz
 	box.child = gui.get_node(childname)
 	box.viewLength = horiz and gui.get_size(box.node).x or gui.get_size(box.node).y -- size of mask
@@ -479,8 +485,7 @@ function M.newScrollBox(key, name, childname, active, horiz, scrollbarname)
 	box.release = scrollBox_release
 
 	local handleLength = box.viewLength/(box.scrollLength) * box.viewLength -- assuming the scrollbar is the same length as the mask
-				--	  M.newSlider(key, name, active, pressfunc, releasefunc, dragfunc, length, handleLength, startFraction, autoResizeHandle)
-	local scrollbar = M.newSlider(key, scrollbarname, active, nil, nil, function(value) box:scroll(value) end, box.viewLength, handleLength, 1, true)
+	local scrollbar = M.new_slider(key, scrollbarname, active, nil, nil, function(value) box:scroll(value) end, box.viewLength, handleLength, 1, true)
 	scrollbar.scrollBox = box
 	box.scrollbar = scrollbar
 	box.touchScroll = false -- click-drag to scroll or not.
@@ -493,19 +498,19 @@ end
 --		Use theme.group_enable() for custom animations, etc.
 function M.group_enable(key, name)
 	key = key[keyName]
-	local g = btns[key].groups[name]
+	local g = wgts[key].groups[name]
 	gui.set_enabled(g.node, true)
 	theme.group_enable(g)
 	for i, v in ipairs(g.children) do
 		M.activate_btn(key, v)
 	end
-	if mode == M.MODE_KEYBOARD then btns[key].all[g.children[1]]:hover() end
+	if mode == M.MODE_KEYBOARD then wgts[key].all[g.children[1]]:hover() end
 end
 
 -- It's up to the theme hide the node or not.
 function M.group_disable(key, name)
 	key = key[keyName]
-	local g = btns[key].groups[name]
+	local g = wgts[key].groups[name]
 	theme.group_disable(g)
 	for i, v in ipairs(g.children) do
 		M.deactivate_btn(key, v)
@@ -519,11 +524,11 @@ function M.group_swap(key, from, to)
 	M.group_enable(key, to)
 end
 
-function M.new_group(key, name, rootnode, children, autoset_btns_vert, autoset_btns_horiz, disable)
+function M.new_group(key, name, rootnode, children, autoset_wgts_vert, autoset_wgts_horiz, disable)
 	key = key[keyName]
 	verify_key(key, "new_group")
-	autoset_btns_vert = autoset_btns_vert or false
-	autoset_btns_horiz = autoset_btns_horiz or false
+	autoset_wgts_vert = autoset_wgts_vert or false
+	autoset_wgts_horiz = autoset_wgts_horiz or false
 	disable = disable or false
 	local group = {
 		name = name,
@@ -532,9 +537,9 @@ function M.new_group(key, name, rootnode, children, autoset_btns_vert, autoset_b
 		children = children -- list of button names
 	}
 	if disable then gui.set_enabled(group.node, false) end
-	btns[key].groups[name] = group
-	if autoset_btns_vert then M.btnlist_autoset_neighbors(key, children, true)
-	elseif autoset_btns_horiz then M.btnlist_autoset_neighbors(key, children, false)
+	wgts[key].groups[name] = group
+	if autoset_wgts_vert then M.btnlist_autoset_neighbors(key, children, true)
+	elseif autoset_wgts_horiz then M.btnlist_autoset_neighbors(key, children, false)
 	end
 end
 
