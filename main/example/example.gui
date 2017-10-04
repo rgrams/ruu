@@ -100,7 +100,7 @@ nodes {
   layer: ""
   inherit_alpha: false
   alpha: 1.0
-  template: "/main/ruu/template_button.gui"
+  template: "/main/ruu/widget templates/template_button.gui"
   template_node_child: false
 }
 nodes {
@@ -259,7 +259,7 @@ nodes {
   layer: ""
   inherit_alpha: false
   alpha: 1.0
-  template: "/main/ruu/template_button.gui"
+  template: "/main/ruu/widget templates/template_button.gui"
   template_node_child: false
 }
 nodes {
@@ -418,7 +418,7 @@ nodes {
   layer: ""
   inherit_alpha: false
   alpha: 1.0
-  template: "/main/ruu/template_toggleButton.gui"
+  template: "/main/ruu/widget templates/template_toggleButton.gui"
   template_node_child: false
 }
 nodes {
@@ -632,7 +632,7 @@ nodes {
   layer: ""
   inherit_alpha: false
   alpha: 1.0
-  template: "/main/ruu/template_toggleButton.gui"
+  template: "/main/ruu/widget templates/template_toggleButton.gui"
   template_node_child: false
 }
 nodes {
@@ -846,7 +846,7 @@ nodes {
   layer: ""
   inherit_alpha: false
   alpha: 1.0
-  template: "/main/ruu/template_toggleButton.gui"
+  template: "/main/ruu/widget templates/template_toggleButton.gui"
   template_node_child: false
 }
 nodes {
@@ -1060,7 +1060,7 @@ nodes {
   layer: ""
   inherit_alpha: false
   alpha: 1.0
-  template: "/main/ruu/template_radioButton.gui"
+  template: "/main/ruu/widget templates/template_radioButton.gui"
   template_node_child: false
 }
 nodes {
@@ -1273,7 +1273,7 @@ nodes {
   layer: ""
   inherit_alpha: false
   alpha: 1.0
-  template: "/main/ruu/template_radioButton.gui"
+  template: "/main/ruu/widget templates/template_radioButton.gui"
   template_node_child: false
 }
 nodes {
@@ -1486,7 +1486,7 @@ nodes {
   layer: ""
   inherit_alpha: false
   alpha: 1.0
-  template: "/main/ruu/template_radioButton.gui"
+  template: "/main/ruu/widget templates/template_radioButton.gui"
   template_node_child: false
 }
 nodes {
@@ -1699,7 +1699,7 @@ nodes {
   layer: ""
   inherit_alpha: false
   alpha: 1.0
-  template: "/main/ruu/template_radioButton.gui"
+  template: "/main/ruu/widget templates/template_radioButton.gui"
   template_node_child: false
 }
 nodes {
@@ -1912,7 +1912,7 @@ nodes {
   layer: ""
   inherit_alpha: false
   alpha: 1.0
-  template: "/main/ruu/template_radioButton.gui"
+  template: "/main/ruu/widget templates/template_radioButton.gui"
   template_node_child: false
 }
 nodes {
@@ -2125,7 +2125,7 @@ nodes {
   layer: ""
   inherit_alpha: false
   alpha: 1.0
-  template: "/main/ruu/template_slider.gui"
+  template: "/main/ruu/widget templates/template_slider.gui"
   template_node_child: false
 }
 nodes {
@@ -2330,7 +2330,7 @@ nodes {
   layer: ""
   inherit_alpha: false
   alpha: 1.0
-  template: "/main/ruu/template_scrollBar.gui"
+  template: "/main/ruu/widget templates/template_scrollBar.gui"
   template_node_child: false
 }
 nodes {
@@ -2707,7 +2707,7 @@ nodes {
   layer: ""
   inherit_alpha: true
   alpha: 1.0
-  template: "/main/ruu/template_toggleButton.gui"
+  template: "/main/ruu/widget templates/template_toggleButton.gui"
   template_node_child: false
 }
 nodes {
@@ -2919,7 +2919,7 @@ nodes {
   layer: ""
   inherit_alpha: true
   alpha: 1.0
-  template: "/main/ruu/template_scrollBar.gui"
+  template: "/main/ruu/widget templates/template_scrollBar.gui"
   template_node_child: false
 }
 nodes {
