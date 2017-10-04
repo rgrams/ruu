@@ -3,22 +3,29 @@
 
 local M = {}
 
-local theme = require "main.ruu.ruu default theme"
+local theme = require "main.ruu.ruu theme"
 
---  INPUT
-M.inputKeyDirs = {}
-M.inputKeyDirs[hash("ui_up")] = "up"
-M.inputKeyDirs[hash("ui_down")] = "down"
-M.inputKeyDirs[hash("ui_left")] = "left"
-M.inputKeyDirs[hash("ui_right")] = "right"
 
-M.input_click = hash("mouse click")
-M.input_enter = hash("enter")
-M.input_scrollUp = hash("scroll up")
-M.input_scrollDown = hash("scroll down")
+-- ---------------------------------------------------------------------------------
+--| 									CONFIG										|
+-- ---------------------------------------------------------------------------------
+--  				--  INPUT  --
+-- adjust hashed values to change the action name required in your input bindings
+M.INPUT_DIRKEY = {}
+M.INPUT_DIRKEY[hash("up")] = "up"
+M.INPUT_DIRKEY[hash("down")] = "down"
+M.INPUT_DIRKEY[hash("left")] = "left"
+M.INPUT_DIRKEY[hash("right")] = "right"
+M.INPUT_CLICK = hash("mouse click")
+M.INPUT_ENTER = hash("enter")
+M.INPUT_SCROLLUP = hash("scroll up")
+M.INPUT_SCROLLDOWN = hash("scroll down")
+M.INPUT_TEXT = hash("text")
+M.INPUT_BACKSPACE = hash("backspace")
 
-M.input_scroll_dist = 10
+M.INPUT_SCROLL_DIST = 10
 
+--  				--  CONTROL MODE  --
 -- For keyboard only, or keyboard and mouse - Buttons stay hovered until another is hovered. Always hovers a default initial button.
 M.MODE_KEYBOARD = 1
 -- Meant for mouse only, keys can still be used once the mouse hovers a button - buttons hover when mouse enters and unhover when it exits.
@@ -289,30 +296,30 @@ function M.on_input(key, action_id, action)
 	if not action_id then -- Mouse movement
 		M.update_mouse(key, action.x, action.y, action.dx, action.dy)
 		-- if you wish to tell if the mouse is over a button in your gui script you can call M.update_mouse directly and get the return value.
-	elseif action_id == M.input_click then -- Mouse click
+	elseif action_id == M.INPUT_CLICK then -- Mouse click
 		if action.pressed then
 			for i, v in ipairs(btns[key].hovered) do v:press() end
 		elseif action.released then
 			for i, v in ipairs(btns[key].hovered) do v:release() end
 		end
-	elseif action_id == M.input_enter then -- Keyboard/Gamepad enter
+	elseif action_id == M.INPUT_ENTER then -- Keyboard/Gamepad enter
 		if action.pressed then
 			for i, v in ipairs(btns[key].hovered) do v:press() end
 		elseif action.released then
 			for i, v in ipairs(btns[key].hovered) do v:release() end
 		end
-	elseif action_id == M.input_scrollUp then
+	elseif action_id == M.INPUT_SCROLLUP then
 		if action.pressed then
-			for i, v in ipairs(btns[key].hovered) do if v.drag then v:drag(M.input_scroll_dist, M.input_scroll_dist) end end
+			for i, v in ipairs(btns[key].hovered) do if v.drag then v:drag(M.INPUT_SCROLL_DIST, M.INPUT_SCROLL_DIST) end end
 			M.update_mouse(key, action.x, action.y, action.dx, action.dy)
 		end
-	elseif action_id == M.input_scrollDown then
+	elseif action_id == M.INPUT_SCROLLDOWN then
 		if action.pressed then
-			for i, v in ipairs(btns[key].hovered) do if v.drag then v:drag(-M.input_scroll_dist, -M.input_scroll_dist) end end
+			for i, v in ipairs(btns[key].hovered) do if v.drag then v:drag(-M.INPUT_SCROLL_DIST, -M.INPUT_SCROLL_DIST) end end
 			M.update_mouse(key, action.x, action.y, action.dx, action.dy)
 		end
-	elseif M.inputKeyDirs[action_id] and action.pressed then -- Keyboard/Gamepad navigation
-		if btns[key].cur_hover then btns[key].cur_hover:hover_adj(M.inputKeyDirs[action_id]) end
+	elseif M.INPUT_DIRKEY[action_id] and action.pressed then -- Keyboard/Gamepad navigation
+		if btns[key].cur_hover then btns[key].cur_hover:hover_adj(M.INPUT_DIRKEY[action_id]) end
 	end
 end
 
