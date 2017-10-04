@@ -11,8 +11,9 @@ function init(self)
 	ruu:newCheckbox("checkbox3", true, nil, function(checked) print("Checkbox 3 released, checked = ", checked) end, true)
 	local radioButtons = {"radBtn1", "radBtn2", "radBtn3", "radBtn4", "radBtn5"}
 	ruu:newRadioButtonGroup(radioButtons, true, nil, function(name) print("Radio Button ", name, " checked.") end, "radBtn4")
-	ruu:newSlider("slider1", true, nil, nil, function(value) print("Slider - ", value) end, true, 200, 0.3)
-	ruu:newScrollBar("scrollbar1", true, nil, nil, function(value) print("ScrollBar - ", value) end, true, 200, 1, 100)
+
+	ruu:newSlider("slider1", true, nil, nil, function(fraction) print("Slider - ", fraction) end, nil, 0, 0.3)
+	ruu:newSlider("scrollbar1", true, nil, nil, function(fraction) print("Scrollbar - ", fraction) end, 200, 100, 1, true)
 
 	ruu:newScrollBox("scrollbox", "scrollbox_child", true, false, "scrollbox_scrollbar")
 	local button = ruu:newCheckbox("checkBox_in_scrollBox", true, nil, function(checked) print("checkBox_in_scrollBox released, checked = ", checked) end, false)

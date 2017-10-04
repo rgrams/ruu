@@ -178,47 +178,29 @@ local function release_slider(self, dontfire) -- default is to fire
 end
 
 local function drag_slider(self, dx, dy)
-	if self.horiz then
-		self.pos.x = clamp(self.pos.x + dx, self.origin.x + self.range, self.origin.x)
-		self.value = (self.pos.x - self.origin.x)/self.range
-	else
-		self.pos.y = clamp(self.pos.y + dy, self.origin.y + self.range, self.origin.y)
-		self.value = (self.pos.y - self.origin.y)/self.range
-	end
+	self.dragVec.x = dx;  self.dragVec.y = dy
+	local dragDist = vmath.dot(self.dragVec, self.angleVec)
+	self.pos.x = clamp(self.pos.x + dragDist, self.endx, self.startx)
+	self.fraction = self.slideLength == 0 and 0 or (self.pos.x - self.startx)/self.slideLength -- have to avoid dividing by zero
 	gui.set_position(self.node, self.pos)
-	if self.dragfunc then self.dragfunc(self.value) end
+
+	if self.dragfunc then self.dragfunc(self.fraction) end
 end
 
-local function drag_scrollBar(self, dx, dy, dontfire)
-	if self.horiz then
-		self.pos.x = clamp(self.pos.x + dx, self.origin.x + self.range + self.width/2, self.origin.x + self.width/2)
-		if self.range > 0 then self.value = (self.pos.x - self.origin.x - self.width/2)/self.range
-		else self.value = 0
-		end
-	else
-		self.pos.y = clamp(self.pos.y + dy, self.origin.y + self.range + self.width/2, self.origin.y + self.width/2)
-		if self.range > 0 then self.value = (self.pos.y - self.origin.y - self.width/2)/self.range
-		else self.value = 0
-		end
-	end
-	gui.set_position(self.node, self.pos)
-	if self.dragfunc and not dontfire then self.dragfunc(self.value) end
-end
+local function slider_setHandleLength(self, newLength)
+	self.handleLength = clamp(newLength, self.length, 0)
+	self.slideLength = self.length - self.handleLength
+	self.startx = self.handleLength/2
+	self.endx = self.startx + self.slideLength
 
-local function scrollBar_setWidth(self, newwidth)
-	if newwidth > self.length then newwidth = self.length end
-	self.width = newwidth
-	self.range = self.length - self.width
-	local size = gui.get_size(self.node)
-	if self.horiz then
-		size.x = self.width
-		self.pos.x = self.origin.x + self.width/2 + self.value * self.range
-	else
-		size.y = self.width
-		self.pos.y = self.origin.y + self.width/2 + self.value * self.range
-	end
-	gui.set_size(self.node, size)
+	self.pos.x = vmath.lerp(self.fraction, self.startx, self.endx)
 	gui.set_position(self.node, self.pos)
+
+	if self.autoResize then -- for scroll bar style sliders
+		local size = gui.get_size(self.node)
+		size.x = self.handleLength
+		gui.set_size(self.node, size)
+	end
 end
 
 local function scrollBox_scroll(self, percent)
@@ -450,50 +432,34 @@ function M.newRadioButtonGroup(key, namesList, active, pressfunc, releasefunc, c
 	end
 end
 
-function M.newSlider(key, name, active, pressfunc, releasefunc, dragfunc, horiz, range, value)
+function M.newSlider(key, name, active, pressfunc, releasefunc, dragfunc, length, handleLength, startFraction, autoResizeHandle)
 	if type(key) == "table" then key = key[keyName] end
 	local button = newBaseWidget(key, name, active, pressfunc, releasefunc)
-	button.origin = gui.get_position(button.node)
-	button.pos = vmath.vector3(button.origin)
-	button.horiz = horiz -- true for horizontal slider, false for vertical
-	button.range = range or 200 -- distance slider can move
-	button.value = value or 0 -- 0.0-1.0 position of slider in its range. 0.0 --> left/bottom
+	button.rootNode = gui.get_node(name .. "/root")
+	button.endpointNode = gui.get_node(name .. "/endpoint")
+	local rot = math.rad(gui.get_rotation(button.rootNode).z)
+	button.angleVec = vmath.vector3(math.cos(rot), math.sin(rot), 0)
+	button.length = length or gui.get_position(button.endpointNode).x -- length of slider range
+	button.handleLength = handleLength or gui.get_size(button.node).x -- "physical" length of slider handle - default to x of node, input 0 if desired.
+	-- meant for scroll bar style sliders where the handle fits inside the bar.
+
+	--			The following are set in button:setHandleLength()
+	--button.slideLength = length - handleLength : actual distance slider can move
+	--button.startx = origin X (0.0) + handle length/2
+	--button.endx = startx + slideLength
+
+	button.fraction = startFraction or 0 -- 0.0-1.0 position of slider in its range. 0.0 --> left/bottom
+	button.dragVec = vmath.vector3() -- used for (dx, dy) in drag function to avoid creating a new vector every frame of dragging
+	button.autoResize = autoResizeHandle -- should resize the actual handle node to match `handleLength`. Defaults to nil/false
 	button.press = press_slider
 	button.release = release_slider
 	button.dragfunc = dragfunc -- called continuously whenever the slider is moved.
 	button.drag = drag_slider
-	if button.value > 0 then -- set initial position
-		button.pos.x = horiz and (button.pos.x + button.value * button.range) or button.pos.x
-		button.pos.y = not horiz and (button.pos.y + button.value * button.range) or button.pos.y
-		gui.set_position(button.node, button.pos)
-	end
-	if not horiz then gui.set_rotation(gui.get_node(name .. "/bar"), vmath.vector3(0, 0, 90)) end
-	theme.init_btn(button)
-	return button
-end
+	button.setHandleLength = slider_setHandleLength
 
-function M.newScrollBar(key, name, active, pressfunc, releasefunc, dragfunc, horiz, length, value, width)
-	if type(key) == "table" then key = key[keyName] end
-	local button = newBaseWidget(key, name, active, pressfunc, releasefunc)
-	button.origin = gui.get_position(button.node)
-	button.pos = vmath.vector3(button.origin)
-	button.horiz = horiz -- true for horizontal slider, false for vertical
-	button.width = width or gui.get_size(button.node).x -- width of slider handle
-	button.length = range or 200 -- length of bar
-	button.range = button.length - button.width -- distance slider can move
-	button.value = value or 0 -- 0.0-1.0 position of slider in its range. 0.0 --> left/bottom
-	button.press = press_slider
-	button.release = release_slider
-	button.dragfunc = dragfunc -- called continuously whenever the slider is moved.
-	button.drag = drag_scrollBar
-	button.setWidth = scrollBar_setWidth
-	if button.value > 0 then -- set initial position
-		button.pos.x = horiz and (button.pos.x + button.value * button.range) or button.pos.x
-		button.pos.y = not horiz and (button.pos.y + button.value * button.range) or button.pos.y
-		gui.set_position(button.node, button.pos)
-	end
-	button:setWidth(button.width)
-	if not horiz then gui.set_rotation(gui.get_node(name .. "/bar"), vmath.vector3(0, 0, 90)) end
+	-- set starting pos, etc.
+	button.pos = gui.get_position(button.node) -- will use the current Y and Z and only change X
+	button:setHandleLength(button.handleLength)
 	theme.init_btn(button)
 	return button
 end
@@ -512,8 +478,9 @@ function M.newScrollBox(key, name, childname, active, horiz, scrollbarname)
 	box.press = scrollBox_press
 	box.release = scrollBox_release
 
-	local barwidth = box.viewLength/(box.scrollLength + box.viewLength) * box.viewLength -- assuming the scrollbar is the same length as the mask
-	local scrollbar = M.newScrollBar(key, scrollbarname, active, nil, nil, function(value) box:scroll(value) end, false, box.viewLength, 1, barwidth)
+	local handleLength = box.viewLength/(box.scrollLength) * box.viewLength -- assuming the scrollbar is the same length as the mask
+				--	  M.newSlider(key, name, active, pressfunc, releasefunc, dragfunc, length, handleLength, startFraction, autoResizeHandle)
+	local scrollbar = M.newSlider(key, scrollbarname, active, nil, nil, function(value) box:scroll(value) end, box.viewLength, handleLength, 1, true)
 	scrollbar.scrollBox = box
 	box.scrollbar = scrollbar
 	box.touchScroll = false -- click-drag to scroll or not.
