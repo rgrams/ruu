@@ -369,6 +369,13 @@ function M.btnlist_autoset_neighbors(key, list, vertical)
 	end
 end
 
+function M.widgets_setStencil(key, stencilNode, ...)
+	key = key[keyName]
+	for i, v in ipairs({...}) do
+		wgts[key].all[v].stencilNode = stencilNode
+	end
+end
+
 local function new_baseWidget(key, name, active, pressfunc, releasefunc)
 	verify_key(key, "new_baseWidget")
 	active = active or false
