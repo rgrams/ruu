@@ -269,7 +269,7 @@ function M.update_mouse(key, actionx, actiony, dx, dy) -- should call this from 
 		local hitAny = true
 	else
 		for k, v in pairs(btns[key].active) do -- hit test all active widgets
-			if gui.pick_node(v.node, actionx, actiony) then
+			if gui.pick_node(v.node, actionx, actiony) and (not v.stencilNode and true or gui.pick_node(v.stencilNode, actionx, actiony)) then
 				-- hit
 				hitAny = true
 				if not v.hovered then

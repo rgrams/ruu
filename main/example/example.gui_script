@@ -15,7 +15,8 @@ function init(self)
 	ruu:newScrollBar("scrollbar1", true, nil, nil, function(value) print("ScrollBar - ", value) end, true, 200, 1, 100)
 
 	ruu:newScrollBox("scrollbox", "scrollbox_child", true, false, "scrollbox_scrollbar")
-	ruu:newCheckbox("checkBox_in_scrollBox", true, nil, function(checked) print("checkBox_in_scrollBox released, checked = ", checked) end, false)
+	local button = ruu:newCheckbox("checkBox_in_scrollBox", true, nil, function(checked) print("checkBox_in_scrollBox released, checked = ", checked) end, false)
+	button.stencilNode = gui.get_node("scrollbox/body")
 end
 
 function on_input(self, action_id, action)
