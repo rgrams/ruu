@@ -7,10 +7,10 @@ local theme = require "main.ruu.ruu theme"
 
 
 -- ---------------------------------------------------------------------------------
---| 									CONFIG										|
+--| 							CONFIG: DEFAULT VALUES								|
 -- ---------------------------------------------------------------------------------
---  				--  INPUT  --
--- adjust hashed values to change the action name required in your input bindings
+-- ##########  INPUT  ##########
+-- Hashed values are the action names required in your input bindings
 M.INPUT_DIRKEY = {}
 M.INPUT_DIRKEY[hash("up")] = "up"
 M.INPUT_DIRKEY[hash("down")] = "down"
@@ -25,15 +25,22 @@ M.INPUT_BACKSPACE = hash("backspace")
 
 M.INPUT_SCROLL_DIST = 10
 
---  				--  CONTROL MODE  --
--- For keyboard only, or keyboard and mouse - Buttons stay hovered until another is hovered. Always hovers a default initial button.
+-- ##########  CONTROL MODE  ##########
+-- KEYBOARD: For keyboard only, or keyboard and mouse - Buttons stay hovered until another is hovered. Always hovers a default initial button.
 M.MODE_KEYBOARD = 1
--- Meant for mouse only, keys can still be used once the mouse hovers a button - buttons hover when mouse enters and unhover when it exits.
-M.MODE_MOUSE = 2
--- For touch - no hover state used, cursor position only checked while a tap is held.
--- M.MODE_MOBILE = 3
 
-local mode = M.MODE_KEYBOARD
+-- MOUSE: For mouse only, keys still work once the mouse hovers a button (if you give Ruu key input) - buttons hover when mouse enters and unhover when it exits.
+M.MODE_MOUSE = 2
+
+-- MOBILE: For touch - no hover state used, cursor position only checked while a tap is held.
+-- Rather, everything is unhovered on touch release.
+M.MODE_MOBILE = 3
+
+M.mode = M.MODE_KEYBOARD
+
+local sysInfo = sys.get_sys_info()
+if sysInfo.system_name == "Android" or sysInfo.system_name == "iPhone OS" then print("mobile build") M.mode = M.MODE_MOBILE end
+
 
 -- ---------------------------------------------------------------------------------
 --| 					PRIVATE FUNCTIONS 1: SETUP & KEYS							|
@@ -41,10 +48,10 @@ local mode = M.MODE_KEYBOARD
 
 -- the main table that stores all widgets and other data.
 local wgts = {} -- FORMAT: wgts[key] = new_context_table()
--- Note: cur_hover stores a reference to the button "object"/table, not the button name
 
 local function new_context_table()
-	return {all = {}, active = {}, groups = {}, cur_hover = nil, cur_mouse_hover = nil, dragging = 0, hovered = {}}
+	return {all = {}, active = {}, groups = {}, cur_mouse_hover = nil, dragging = {}, dragCount = 0, hovered = {}}
+	-- widgets are keyed by their node name (string).
 end
 
 local keyName = hash("arglefraster") -- this really doesn't matter
@@ -177,7 +184,8 @@ local function press_slider(self)
 	self.pressed = true
 	theme.press_btn(self)
 	if self.pressfunc then self.pressfunc() end
-	wgts[self.key].dragging = wgts[self.key].dragging + 1
+	wgts[self.key].dragging[self] = true
+	wgts[self.key].dragCount = wgts[self.key].dragCount + 1
 end
 
 local function release_slider(self, dontfire) -- default is to fire
@@ -185,7 +193,8 @@ local function release_slider(self, dontfire) -- default is to fire
 		theme.release_btn(self)
 		self.pressed = false
 		if self.releasefunc and not dontfire then self.releasefunc() end
-		wgts[self.key].dragging = wgts[self.key].dragging - 1
+		wgts[self.key].dragging[self] = nil
+		wgts[self.key].dragCount = wgts[self.key].dragCount - 1
 	end
 end
 
@@ -225,19 +234,25 @@ local function scrollBox_unhover(self)
 end
 
 local function scrollBox_press(self)
-	wgts[self.key].dragging = wgts[self.key].dragging + 1
+	self.pressed = true
+	wgts[self.key].dragging[self] = true
+	wgts[self.key].dragCount = wgts[self.key].dragCount + 1
 end
 
 local function scrollBox_release(self)
-	wgts[self.key].dragging = wgts[self.key].dragging - 1
+	if self.pressed then
+		self.pressed = false
+		wgts[self.key].dragging[self] = nil
+		wgts[self.key].dragCount = wgts[self.key].dragCount - 1
+	end
 end
 
-local function scrollBox_scroll(self, percent)
-	percent = 1 - percent
+local function scrollBox_scroll(self, fraction)
+	fraction = 1 - fraction -- flip scroll bar
 	local pos = gui.get_position(self.child)
-	if self.horiz then pos.x = self.viewLength/2 + self.scrollLength * percent
-	else pos.y = self.viewLength/2 + self.scrollLength * percent
-	end
+	local starty = self.viewLength/2
+	local endy = self.childHeight - starty
+	pos.y = vmath.lerp(fraction, starty, endy)
 	gui.set_position(self.child, pos)
 end
 
@@ -246,31 +261,28 @@ end
 -- ---------------------------------------------------------------------------------
 
 function M.update_mouse(key, actionx, actiony, dx, dy) -- should call this from gui script before click and release events
-	-- If dragging, don't check for collisions or anything, just drag.
-	-- When the mouse button is released the drag will end and things will go back to normal
-	-- 			I might want to update mouse again after mouse release . . .
 	if type(key) == "table" then key = key[keyName] end
 	local hitAny = false
 
-	if wgts[key].dragging > 0 then
-		for i, v in ipairs(wgts[key].hovered) do if v.drag then v:drag(dx, dy) end end
+	if wgts[key].dragCount > 0 then
+		for wgt, v in pairs(wgts[key].dragging) do if wgt.drag then wgt:drag(dx, dy) end end
 		local hitAny = true
-	else
-		for k, v in pairs(wgts[key].active) do -- hit test all active widgets
-			if gui.pick_node(v.node, actionx, actiony) and (not v.stencilNode and true or gui.pick_node(v.stencilNode, actionx, actiony)) then
+	end
+	for name, wgt in pairs(wgts[key].active) do -- hit test all active
+		if not wgts[key].dragging[wgt] then -- skip hit test for widgets we're currently dragging
+			if gui.pick_node(wgt.node, actionx, actiony) and (not wgt.stencilNode and true or gui.pick_node(wgt.stencilNode, actionx, actiony)) then
 				-- hit
 				hitAny = true
-				if not v.hovered then
-					print("Hover")
-					table.insert(wgts[key].hovered, v) -- add to hovered list
-					v:hover()
+				if not wgt.hovered then
+					table.insert(wgts[key].hovered, wgt) -- add to hovered list
+					wgt:hover()
 				end
-			elseif v.hovered then
-				for i, btn in ipairs(wgts[key].hovered) do
-					if btn == v then
-						print("Unhover")
+			elseif wgt.hovered then
+				-- Not hit, but hovered - find & remove from hovered list, and unhover
+				for i, v in ipairs(wgts[key].hovered) do
+					if v == wgt then
 						table.remove(wgts[key].hovered, i)
-						v:unhover()
+						wgt:unhover()
 					end
 				end
 			end
@@ -285,10 +297,14 @@ function M.on_input(key, action_id, action)
 		M.update_mouse(key, action.x, action.y, action.dx, action.dy)
 		-- if you wish to tell if the mouse is over a button in your gui script you can call M.update_mouse directly and get the return value.
 	elseif action_id == M.INPUT_CLICK then -- Mouse click
+		if M.mode == M.MODE_MOBILE then M.update_mouse(key, action.x, action.y, action.dx, action.dy) end
 		if action.pressed then
 			for i, v in ipairs(wgts[key].hovered) do v:press() end
 		elseif action.released then
-			for i, v in ipairs(wgts[key].hovered) do v:release() end
+			for i, v in ipairs(wgts[key].hovered) do
+				v:release()
+				if M.mode == M.MODE_MOBILE then v:unhover() table.remove(wgts[key].hovered, i) end
+			end
 		end
 	elseif action_id == M.INPUT_ENTER then -- Keyboard/Gamepad enter
 		if action.pressed then
@@ -483,6 +499,7 @@ function M.new_scrollBox(key, name, childname, active, horiz, scrollbarname)
 	box.horiz = horiz
 	box.child = gui.get_node(childname)
 	box.viewLength = horiz and gui.get_size(box.node).x or gui.get_size(box.node).y -- size of mask
+	box.childHeight = gui.get_size(box.child).y
 	box.scrollLength = (horiz and gui.get_size(box.child).x or gui.get_size(box.child).y) - box.viewLength -- max movement of child
 	box.range = math.max(0, box.scrollLength)
 	box.scroll = scrollBox_scroll
@@ -492,11 +509,11 @@ function M.new_scrollBox(key, name, childname, active, horiz, scrollbarname)
 	box.release = scrollBox_release
 
 	local handleLength = box.viewLength/(box.scrollLength) * box.viewLength -- assuming the scrollbar is the same length as the mask
-	local scrollbar = M.new_slider(key, scrollbarname, active, nil, nil, function(value) box:scroll(value) end, box.viewLength, handleLength, 1, true)
+	local scrollbar = M.new_slider(key, scrollbarname, active, nil, nil, function(fraction) box:scroll(fraction) end, box.viewLength, handleLength, 1, true)
 	scrollbar.scrollBox = box
 	box.scrollbar = scrollbar
-	box.touchScroll = false -- click-drag to scroll or not.
-	box.drag = function(self, dx, dy) local a = 1 if self.touchScroll then a = -self.viewLength / self.scrollLength end box.scrollbar:drag(dx*a, dy*a) end
+	box.touchScroll = M.mode == M.MODE_MOBILE -- click-drag to scroll (in opposite direction) or not.
+	box.drag = function(self, dx, dy) local a = 1 if self.touchScroll then a = -self.viewLength/(self.scrollLength + self.viewLength) end box.scrollbar:drag(dx*a, dy*a) end
 	return box
 end
 
@@ -511,7 +528,7 @@ function M.group_enable(key, name)
 	for i, v in ipairs(g.children) do
 		M.activate_btn(key, v)
 	end
-	if mode == M.MODE_KEYBOARD then wgts[key].all[g.children[1]]:hover() end
+	if M.mode == M.MODE_KEYBOARD then wgts[key].all[g.children[1]]:hover() end
 end
 
 -- It's up to the theme hide the node or not.
