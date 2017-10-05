@@ -303,7 +303,7 @@ function M.on_input(key, action_id, action)
 		elseif action.released then
 			for i, v in ipairs(wgts[key].hovered) do
 				v:release()
-				if M.mode == M.MODE_MOBILE then v:unhover() table.remove(wgts[key].hovered, i) end
+				if M.mode == M.MODE_MOBILE then v:unhover() wgts[key].hovered[i] = nil end
 			end
 		end
 	elseif action_id == M.INPUT_ENTER then -- Keyboard/Gamepad enter
