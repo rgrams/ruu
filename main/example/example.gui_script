@@ -1,5 +1,6 @@
 
 local ruu = require "main.ruu.ruu"
+local ruuCompWgts = require "main.ruu.ruu compound widgets"
 
 
 function init(self)
@@ -18,6 +19,8 @@ function init(self)
 	ruu:new_scrollBox("scrollbox", "scrollbox_child", true, false, "scrollbox_scrollbar")
 	local button = ruu:new_toggleButton("toggleButton_in_scrollBox", true, nil, function(checked) print("toggleButton_in_scrollBox released, checked = ", checked) end, false)
 	ruu:widgets_setStencil(gui.get_node("scrollbox/body"), "toggleButton_in_scrollBox")
+
+	ruu:new_inputField("inputField", true, nil, nil, "some text")
 end
 
 function on_input(self, action_id, action)

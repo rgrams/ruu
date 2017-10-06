@@ -54,30 +54,31 @@ local function new_context_table()
 	-- widgets are keyed by their node name (string).
 end
 
-local keyName = hash("arglefraster") -- this really doesn't matter
+M.keyName = hash("arglefraster") -- this really doesn't matter
 local keyCount = 1
 
 -- ##########  Context Keys  ##########
 -- Each key defines a totally separate GUI context.
 -- Unless you're doing multiplayer or something fancy, you only need the default one (i.e. you never need to call M.getkey())
---	 The 'key' given to all public functions is a table with a key 'keyName' mapped to a unique value (an integer).
+--	 The 'key' given to all public functions is a table with a key 'M.keyName' mapped to a unique value (an integer).
 --	 The default 'key' table is the module itself. (used by functions called with a colon, ruu:func())
 function M.getkey()
 	local k = {}
 	keyCount = keyCount + 1
-	k[keyName] = keyCount
+	k[M.keyName] = keyCount
 	wgts[keyCount] = new_context_table()
 	return k
 end
 
 -- make default key and context
-M[keyName] = 1
-wgts[M[keyName]] = new_context_table()
+M[M.keyName] = 1
+wgts[M[M.keyName]] = new_context_table()
 
 local function verify_key(key, ctxString)
 	ctxString = ctxString or ""
 	if not wgts[key] then
-		error("RUU -" .. ctxString .. "- ERROR: Invalid key. Call functions with a colon (ruu:func()) or with a key made with ruu.getkey(). (i.e. ruu.func(key)).")
+		key = tostring(key)
+		error("RUU -" .. ctxString .. "- ERROR: Invalid key: '" .. key .. "'. Call functions with a colon (ruu:func()) or with a key made with ruu.getkey(). (i.e. ruu.func(key)).")
 	end
 end
 
@@ -261,7 +262,7 @@ end
 -- ---------------------------------------------------------------------------------
 
 function M.update_mouse(key, actionx, actiony, dx, dy) -- should call this from gui script before click and release events
-	if type(key) == "table" then key = key[keyName] end
+	if type(key) == "table" then key = key[M.keyName] end
 	local hitAny = false
 
 	if wgts[key].dragCount > 0 then
@@ -292,7 +293,7 @@ function M.update_mouse(key, actionx, actiony, dx, dy) -- should call this from 
 end
 
 function M.on_input(key, action_id, action)
-	key = key[keyName]
+	key = key[M.keyName]
 	if not action_id then -- Mouse movement
 		M.update_mouse(key, action.x, action.y, action.dx, action.dy)
 		-- if you wish to tell if the mouse is over a button in your gui script you can call M.update_mouse directly and get the return value.
@@ -324,40 +325,48 @@ function M.on_input(key, action_id, action)
 		end
 	elseif M.INPUT_DIRKEY[action_id] and action.pressed then -- Keyboard/Gamepad navigation
 		if wgts[key].cur_hover then wgts[key].cur_hover:hover_adj(M.INPUT_DIRKEY[action_id]) end
+	elseif action_id == M.INPUT_BACKSPACE and (action.pressed or action.repeated) then
+		for i, v in ipairs(wgts[key].hovered) do
+			if v.backspace then v:backspace() end
+		end
+	elseif action_id == M.INPUT_TEXT then
+		for i, v in ipairs(wgts[key].hovered) do
+			if v.textInput then v:textInput(action.text) end
+		end
 	end
 end
 
 function M.activate_btn(key, button)
-	key = key[keyName]
+	key = key[M.keyName]
 	wgts[key].active[button] = wgts[key].all[button]
 end
 
 function M.deactivate_btn(key, button)
-	key = key[keyName]
+	key = key[M.keyName]
 	local b = wgts[key].all[button]
 	wgts[key].active[button] = nil
 	if b.hovered then b:unhover() end
 end
 
 function M.btn_set_pressfunc(key, button, func)
-	key = key[keyName]
+	key = key[M.keyName]
 	wgts[key].all[button].pressfunc = func
 end
 
 function M.btn_set_releasefunc(key, button, func)
-	key = key[keyName]
+	key = key[M.keyName]
 	wgts[key].all[button].releasefunc = func
 end
 
 function M.btn_set_text(key, button, text)
-	key = key[keyName]
+	key = key[M.keyName]
 	local b = wgts[key].all[button]
 	b.text = text
 	gui.set_text(b.textnode, text)
 end
 
 function M.btn_set_neighbors(key, button, up, down, left, right)
-	key = key[keyName]
+	key = key[M.keyName]
 	local b = wgts[key].all[button]
 	if up then b.neighbor_up = wgts[key].all[up] end
 	if down then b.neighbor_down = wgts[key].all[down] end
@@ -367,7 +376,7 @@ end
 
 -- Button List, Auto-set Neighbors - Set the buttons' neighbors so they are a wrapping list.
 function M.btnlist_autoset_neighbors(key, list, vertical)
-	key = key[keyName]
+	key = key[M.keyName]
 	local reflist = {}
 	for i, v in ipairs(list) do
 		table.insert(reflist, wgts[key].all[v])
@@ -386,13 +395,13 @@ function M.btnlist_autoset_neighbors(key, list, vertical)
 end
 
 function M.widgets_setStencil(key, stencilNode, ...)
-	key = key[keyName]
+	key = key[M.keyName]
 	for i, v in ipairs({...}) do
 		wgts[key].all[v].stencilNode = stencilNode
 	end
 end
 
-local function new_baseWidget(key, name, active, pressfunc, releasefunc)
+function M.new_baseWidget(key, name, active, pressfunc, releasefunc)
 	verify_key(key, "new_baseWidget")
 	active = active or false
 	local widget = {
@@ -421,8 +430,8 @@ local function new_baseWidget(key, name, active, pressfunc, releasefunc)
 end
 
 function M.new_button(key, name, active, pressfunc, releasefunc)
-	if type(key) == "table" then key = key[keyName] end
-	local button = new_baseWidget(key, name, active, pressfunc, releasefunc)
+	if type(key) == "table" then key = key[M.keyName] end
+	local button = M.new_baseWidget(key, name, active, pressfunc, releasefunc)
 	button.textnode = gui.get_node(name .. "/text")
 	button.text = gui.get_text(button.textnode)
 	theme.init_btn(button)
@@ -430,8 +439,8 @@ function M.new_button(key, name, active, pressfunc, releasefunc)
 end
 
 function M.new_toggleButton(key, name, active, pressfunc, releasefunc, checked)
-	if type(key) == "table" then key = key[keyName] end
-	local button = new_baseWidget(key, name, active, pressfunc, releasefunc)
+	if type(key) == "table" then key = key[M.keyName] end
+	local button = M.new_baseWidget(key, name, active, pressfunc, releasefunc)
 	button.checked = checked
 	button.textnode = gui.get_node(name .. "/text")
 	button.text = gui.get_text(button.textnode)
@@ -441,10 +450,10 @@ function M.new_toggleButton(key, name, active, pressfunc, releasefunc, checked)
 end
 
 function M.new_radioButtonGroup(key, namesList, active, pressfunc, releasefunc, checkedName)
-	if type(key) == "table" then key = key[keyName] end
+	if type(key) == "table" then key = key[M.keyName] end
 	local buttons = {}
 	for i, name in ipairs(namesList) do
-		local button = new_baseWidget(key, name, active, pressfunc, releasefunc)
+		local button = M.new_baseWidget(key, name, active, pressfunc, releasefunc)
 		button.textnode = gui.get_node(name .. "/text")
 		button.text = gui.get_text(button.textnode)
 		button.checked = name == checkedName
@@ -462,8 +471,8 @@ function M.new_radioButtonGroup(key, namesList, active, pressfunc, releasefunc, 
 end
 
 function M.new_slider(key, name, active, pressfunc, releasefunc, dragfunc, length, handleLength, startFraction, autoResizeHandle)
-	if type(key) == "table" then key = key[keyName] end
-	local button = new_baseWidget(key, name, active, pressfunc, releasefunc)
+	if type(key) == "table" then key = key[M.keyName] end
+	local button = M.new_baseWidget(key, name, active, pressfunc, releasefunc)
 	button.rootNode = gui.get_node(name .. "/root")
 	button.endpointNode = gui.get_node(name .. "/endpoint")
 	local rot = math.rad(gui.get_rotation(button.rootNode).z)
@@ -494,8 +503,8 @@ function M.new_slider(key, name, active, pressfunc, releasefunc, dragfunc, lengt
 end
 
 function M.new_scrollBox(key, name, childname, active, horiz, scrollbarname)
-	if type(key) == "table" then key = key[keyName] end
-	local box = new_baseWidget(key, name, active)
+	if type(key) == "table" then key = key[M.keyName] end
+	local box = M.new_baseWidget(key, name, active)
 	box.horiz = horiz
 	box.child = gui.get_node(childname)
 	box.viewLength = horiz and gui.get_size(box.node).x or gui.get_size(box.node).y -- size of mask
@@ -521,7 +530,7 @@ end
 --		Activate_btn() will enable the buttons if they are disabled
 --		Use theme.group_enable() for custom animations, etc.
 function M.group_enable(key, name)
-	key = key[keyName]
+	key = key[M.keyName]
 	local g = wgts[key].groups[name]
 	gui.set_enabled(g.node, true)
 	theme.group_enable(g)
@@ -533,7 +542,7 @@ end
 
 -- It's up to the theme hide the node or not.
 function M.group_disable(key, name)
-	key = key[keyName]
+	key = key[M.keyName]
 	local g = wgts[key].groups[name]
 	theme.group_disable(g)
 	for i, v in ipairs(g.children) do
@@ -543,13 +552,13 @@ end
 
 -- Convenience function to disable one group and enable another
 function M.group_swap(key, from, to)
-	key = key[keyName]
+	key = key[M.keyName]
 	M.group_disable(key, from)
 	M.group_enable(key, to)
 end
 
 function M.new_group(key, name, rootnode, children, autoset_wgts_vert, autoset_wgts_horiz, disable)
-	key = key[keyName]
+	key = key[M.keyName]
 	verify_key(key, "new_group")
 	autoset_wgts_vert = autoset_wgts_vert or false
 	autoset_wgts_horiz = autoset_wgts_horiz or false
