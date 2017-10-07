@@ -279,16 +279,15 @@ end
 -- Input Field
 local function press_inputField(self)
 	if not self.pressed then theme.press_btn(self) end
-	self.pressedWhenFocused = self.focused
 	self.pressed = true
 	if self.pressfunc then self.pressfunc() end
 end
 
-local function release_inputField(self, dontfire)
+local function release_inputField(self, dontfire, keyboard)
 	if self.pressed and (self.hovered or self.focused) then
 		theme.release_btn(self)
 		self.pressed = false
-		if self.confirmfunc and self.pressedWhenFocused and not dontfire then self.confirmfunc(self.text) end
+		if self.confirmfunc and keyboard and not dontfire then self.confirmfunc(self.text) end
 	else
 		self.pressed = false
 	end
@@ -374,7 +373,7 @@ function M.on_input(key, action_id, action)
 		if action.pressed then
 			if wgts[key].cur_focus then wgts[key].cur_focus:press() end
 		elseif action.released then
-			if wgts[key].cur_focus then wgts[key].cur_focus:release() end
+			if wgts[key].cur_focus then wgts[key].cur_focus:release(false, true) end
 		end
 	elseif action_id == M.INPUT_SCROLLUP then
 		if action.pressed then
@@ -654,7 +653,6 @@ function M.new_inputField(key, name, active, editfunc, confirmfunc, placeholderT
 	self.release = release_inputField
 	self.press = press_inputField
 	self.confirmfunc = confirmfunc
-	self.pressedWhenFocused = false -- used to avoid calling confirmfunc on initial click
 end
 
 -- Group, Enable - Activates all buttons in the group and makes sure the root node is enabled (visible).
