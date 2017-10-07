@@ -276,6 +276,41 @@ local function scrollBox_scroll(self, fraction)
 	gui.set_position(self.child, pos)
 end
 
+-- Input Field
+local function press_inputField(self)
+	if not self.pressed then theme.press_btn(self) end
+	self.pressedWhenFocused = self.focused
+	self.pressed = true
+	if self.pressfunc then self.pressfunc() end
+end
+
+local function release_inputField(self, dontfire)
+	if self.pressed and (self.hovered or self.focused) then
+		theme.release_btn(self)
+		self.pressed = false
+		if self.confirmfunc and self.pressedWhenFocused and not dontfire then self.confirmfunc(self.text) end
+	else
+		self.pressed = false
+	end
+end
+
+local function inputField_setText(self, text)
+	self.text = text
+	gui.set_text(self.textNode, self.text)
+	self.cursorPos.x = gui.get_text_metrics(self.font, self.text .. self.endTag).width + self.textOriginX - self.endTagLength
+	gui.set_position(self.cursorNode, self.cursorPos)
+	if self.editfunc then self.editfunc(self.text) end
+end
+
+local function inputField_textInput(self, char)
+	self:setText(self.text .. char)
+end
+
+local function inputField_backspace(self)
+	self:setText(string.sub(self.text, 1, -2))
+end
+
+
 -- ---------------------------------------------------------------------------------
 --| 							PUBLIC FUNCTIONS:									|
 -- ---------------------------------------------------------------------------------
@@ -323,9 +358,11 @@ function M.on_input(key, action_id, action)
 
 			-- give keyboard focus to first hovered node ###  SHOULD HAVE A BETTER CHOOSING METHOD  ###
 			if wgts[key].hovered[1] then
-				if wgts[key].cur_focus then wgts[key].cur_focus:unfocus() end
-				wgts[key].cur_focus = wgts[key].hovered[1]
-				wgts[key].cur_focus:focus()
+				if wgts[key].cur_focus ~= wgts[key].hovered[1] then
+					if wgts[key].cur_focus then wgts[key].cur_focus:unfocus() end
+					wgts[key].cur_focus = wgts[key].hovered[1]
+					wgts[key].cur_focus:focus()
+				end
 			end
 		elseif action.released then
 			for i, v in ipairs(wgts[key].hovered) do
@@ -596,6 +633,28 @@ function M.new_scrollBox(key, name, childname, active, horiz, scrollbarname)
 	box.touchScroll = M.mode == M.MODE_MOBILE -- click-drag to scroll (in opposite direction) or not.
 	box.drag = function(self, dx, dy) local a = 1 if self.touchScroll then a = -self.viewLength/(self.scrollLength + self.viewLength) end box.scrollbar:drag(dx*a, dy*a) end
 	return box
+end
+
+function M.new_inputField(key, name, active, editfunc, confirmfunc, placeholderText)
+	if type(key) == "table" then key = key[M.keyName] end
+	local self = M.new_baseWidget(key, name, active, nil, nil)
+	self.textNode = gui.get_node(self.name .. "/text")
+	self.cursorNode = gui.get_node(self.name .. "/cursor")
+	self.font = gui.get_font(self.textNode)
+	self.endTag = "."
+	self.endTagLength = gui.get_text_metrics(self.font, self.endTag).width
+	self.placeholderText = placeholderText or ""
+	self.cursorPos = gui.get_position(self.cursorNode)
+	self.textOriginX = gui.get_position(self.textNode).x
+	self.setText = inputField_setText
+	self.backspace = inputField_backspace
+	self.textInput = inputField_textInput
+	self:setText(placeholderText)
+	self.editfunc = editfunc
+	self.release = release_inputField
+	self.press = press_inputField
+	self.confirmfunc = confirmfunc
+	self.pressedWhenFocused = false -- used to avoid calling confirmfunc on initial click
 end
 
 -- Group, Enable - Activates all buttons in the group and makes sure the root node is enabled (visible).

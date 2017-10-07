@@ -20,7 +20,7 @@ function init(self)
 	local button = ruu:new_toggleButton("toggleButton_in_scrollBox", true, nil, function(checked) print("toggleButton_in_scrollBox released, checked = ", checked) end, false)
 	ruu:widgets_setStencil(gui.get_node("scrollbox/body"), "toggleButton_in_scrollBox")
 
-	ruu:new_inputField("inputField", true, nil, nil, "some text")
+	ruu:new_inputField("inputField", true, nil, function(text) print("Inputfield Confirm - ", text) end, "Text here")
 
 	local buttonmap = {
 		{ "button1" },
