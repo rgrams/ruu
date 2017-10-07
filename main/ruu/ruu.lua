@@ -12,10 +12,10 @@ local theme = require "main.ruu.ruu theme"
 -- ##########  INPUT  ##########
 -- Hashed values are the action names required in your input bindings
 M.INPUT_DIRKEY = {}
-M.INPUT_DIRKEY[hash("up")] = "up"
-M.INPUT_DIRKEY[hash("down")] = "down"
-M.INPUT_DIRKEY[hash("left")] = "left"
-M.INPUT_DIRKEY[hash("right")] = "right"
+M.INPUT_DIRKEY[hash("up")] = "neighbor_up"
+M.INPUT_DIRKEY[hash("down")] = "neighbor_down"
+M.INPUT_DIRKEY[hash("left")] = "neighbor_left"
+M.INPUT_DIRKEY[hash("right")] = "neighbor_right"
 M.INPUT_CLICK = hash("mouse click")
 M.INPUT_ENTER = hash("enter")
 M.INPUT_SCROLLUP = hash("scroll up")
@@ -50,8 +50,9 @@ if sysInfo.system_name == "Android" or sysInfo.system_name == "iPhone OS" then p
 local wgts = {} -- FORMAT: wgts[key] = new_context_table()
 
 local function new_context_table()
-	return {all = {}, active = {}, groups = {}, cur_mouse_hover = nil, dragging = {}, dragCount = 0, hovered = {}}
+	return {all = {}, active = {}, groups = {}, cur_focus = nil, dragging = {}, dragCount = 0, hovered = {}}
 	-- widgets are keyed by their node name (string).
+	-- cur_focus = current widget with keyboard focus
 end
 
 M.keyName = hash("arglefraster") -- this really doesn't matter
@@ -87,13 +88,14 @@ end
 -- ---------------------------------------------------------------------------------
 
 local function nextval(t, i) -- looping, used for setting up button list neighbors
-	if #t == 0 then return 0 end
+	if #t == 0 then return false end
 	i = i + 1
 	if i > #t then i = 1 end
 	return t[i]
 end
 
 local function prevval(t, i) -- looping, used for setting up button list neighbors
+	if #t == 0 then return false end
 	i = i - 1
 	if i < 1 then i = #t end
 	return t[i]
@@ -119,6 +121,21 @@ local function unhover_button(self)
 	if self.pressed then self:release(true) end
 end
 
+local function focus_button(self)
+	if not self.focused then
+		self.focused = true
+		theme.focus_btn(self)
+	end
+end
+
+local function unfocus_button(self)
+	if self.focused then
+		if self.pressed then self:release(true) end
+		self.focused = false
+		theme.unfocus_btn(self)
+	end
+end
+
 local function press_button(self)
 	if not self.pressed then theme.press_btn(self) end
 	self.pressed = true
@@ -126,7 +143,7 @@ local function press_button(self)
 end
 
 local function release_button(self, dontfire) -- default is to fire
-	if self.pressed and self.hovered then
+	if self.pressed and (self.hovered or self.focused) then
 		theme.release_btn(self)
 		self.pressed = false
 		if self.releasefunc and not dontfire then self.releasefunc() end
@@ -135,16 +152,18 @@ local function release_button(self, dontfire) -- default is to fire
 	end
 end
 
-local function button_hover_adjacent(self, dirstring) -- keyboard/gamepad navigation
-	local newbtn = self["neighbor_" .. dirstring]
-	if newbtn then
-		newbtn:hover()
+local function button_focus_neighbor(self, action_id)
+	local neighbor = self[M.INPUT_DIRKEY[action_id]]
+	if neighbor then
+		self:unfocus()
+		neighbor:focus()
+		wgts[self.key].cur_focus = neighbor
 	end
 end
 
 -- Toggle Button
 local function release_toggleButton(self, dontfire) -- default is to fire
-	if self.pressed and self.hovered then
+	if self.pressed and (self.hovered or self.focused) then
 		self.pressed = false
 		if not dontfire then
 			self.checked = not self.checked
@@ -163,7 +182,7 @@ local function uncheck_radioButton(self)
 end
 
 local function release_radioButton(self, dontfire) -- default is to fire
-	if self.pressed and self.hovered then
+	if self.pressed and (self.hovered or self.focused) then
 		self.pressed = false
 		if not dontfire then
 			if not self.checked then
@@ -300,7 +319,14 @@ function M.on_input(key, action_id, action)
 	elseif action_id == M.INPUT_CLICK then -- Mouse click
 		if M.mode == M.MODE_MOBILE then M.update_mouse(key, action.x, action.y, action.dx, action.dy) end
 		if action.pressed then
-			for i, v in ipairs(wgts[key].hovered) do v:press() end
+			for i, v in ipairs(wgts[key].hovered) do v:press() end -- press all hovered nodes
+
+			-- give keyboard focus to first hovered node ###  SHOULD HAVE A BETTER CHOOSING METHOD  ###
+			if wgts[key].hovered[1] then
+				if wgts[key].cur_focus then wgts[key].cur_focus:unfocus() end
+				wgts[key].cur_focus = wgts[key].hovered[1]
+				wgts[key].cur_focus:focus()
+			end
 		elseif action.released then
 			for i, v in ipairs(wgts[key].hovered) do
 				v:release()
@@ -309,9 +335,9 @@ function M.on_input(key, action_id, action)
 		end
 	elseif action_id == M.INPUT_ENTER then -- Keyboard/Gamepad enter
 		if action.pressed then
-			for i, v in ipairs(wgts[key].hovered) do v:press() end
+			if wgts[key].cur_focus then wgts[key].cur_focus:press() end
 		elseif action.released then
-			for i, v in ipairs(wgts[key].hovered) do v:release() end
+			if wgts[key].cur_focus then wgts[key].cur_focus:release() end
 		end
 	elseif action_id == M.INPUT_SCROLLUP then
 		if action.pressed then
@@ -324,15 +350,15 @@ function M.on_input(key, action_id, action)
 			M.update_mouse(key, action.x, action.y, action.dx, action.dy)
 		end
 	elseif M.INPUT_DIRKEY[action_id] and action.pressed then -- Keyboard/Gamepad navigation
-		if wgts[key].cur_hover then wgts[key].cur_hover:hover_adj(M.INPUT_DIRKEY[action_id]) end
+		if wgts[key].cur_focus then
+			wgts[key].cur_focus:focus_neighbor(action_id)
+		end
 	elseif action_id == M.INPUT_BACKSPACE and (action.pressed or action.repeated) then
-		for i, v in ipairs(wgts[key].hovered) do
-			if v.backspace then v:backspace() end
-		end
+		local v = wgts[key].cur_focus
+		if v and v.backspace then v:backspace() end
 	elseif action_id == M.INPUT_TEXT then
-		for i, v in ipairs(wgts[key].hovered) do
-			if v.textInput then v:textInput(action.text) end
-		end
+		local v = wgts[key].cur_focus
+		if v and v.textInput then v:textInput(action.text) end
 	end
 end
 
@@ -394,6 +420,49 @@ function M.btnlist_autoset_neighbors(key, list, vertical)
 	end
 end
 
+function M.map_neighbors(key, map)
+	key = key[M.keyName]
+	-- validate map values and convert from string names to widget objects
+	for iy, list in ipairs(map) do
+		for ix, wgt in ipairs(list) do
+			if wgt and type(wgt) == "string" then
+				list[ix] = wgts[key].all[wgt]
+			else
+				list[ix] = false
+			end
+		end
+	end
+	-- set neighbors
+	for iy, list in ipairs(map) do
+		for ix, wgt in ipairs(list) do
+			if #map > 1 then -- don't loop to self if there are no others in this dimension
+				wgt.neighbor_up = prevval(map, iy)[ix]
+				wgt.neighbor_down = nextval(map, iy)[ix]
+			end
+			if #list > 1 then -- don't loop to self if there are no others in this dimension
+				wgt.neighbor_left = prevval(list, ix)
+				wgt.neighbor_right = nextval(list, ix)
+			end
+		end
+	end
+
+	--[[
+	local map_horizontal = {
+		{ 1, 2, 3 }
+	}
+	local map_vertical = {
+		{ 1 },
+		{ 2 },
+		{ 3 }
+	}
+	local map_square = {
+		{ 1, 2, 3 },
+		{ 1, 2, 3 },
+		{ 1, 2, 3 }
+	}
+	]]
+end
+
 function M.widgets_setStencil(key, stencilNode, ...)
 	key = key[M.keyName]
 	for i, v in ipairs({...}) do
@@ -410,6 +479,7 @@ function M.new_baseWidget(key, name, active, pressfunc, releasefunc)
 		key = key,
 		pressed = false,
 		hovered = false,
+		focused = false,
 		hover = hover_button,
 		unhover = unhover_button,
 		press = press_button,
@@ -422,7 +492,9 @@ function M.new_baseWidget(key, name, active, pressfunc, releasefunc)
 		neighbor_right = nil,
 		neighbor_next = nil,
 		neighbor_prev = nil,
-		hover_adj = button_hover_adjacent
+		focus = focus_button,
+		unfocus = unfocus_button,
+		focus_neighbor = button_focus_neighbor
 	}
 	wgts[key].all[name] = widget
 	if active then wgts[key].active[name] = widget end

@@ -5,8 +5,8 @@ local ruuCompWgts = require "main.ruu.ruu compound widgets"
 
 function init(self)
 	--msg.post(".", "acquire_input_focus")
-	ruu:new_button("button2", true, nil, function() print("Button 2 released") end)
 	ruu:new_button("button1", true, nil, function() print("Button 1 released") end)
+	ruu:new_button("button2", true, nil, function() print("Button 2 released") end)
 	ruu:new_toggleButton("toggleButton1", true, nil, function(checked) print("toggleButton 1 released, checked = ", checked) end, false)
 	ruu:new_toggleButton("toggleButton2", true, nil, function(checked) print("toggleButton 2 released, checked = ", checked) end, true)
 	ruu:new_toggleButton("toggleButton3", true, nil, function(checked) print("toggleButton 3 released, checked = ", checked) end, true)
@@ -21,6 +21,15 @@ function init(self)
 	ruu:widgets_setStencil(gui.get_node("scrollbox/body"), "toggleButton_in_scrollBox")
 
 	ruu:new_inputField("inputField", true, nil, nil, "some text")
+
+	local buttonmap = {
+		{ "button1" },
+		{ "button2" },
+		{ "toggleButton1" },
+		{ "toggleButton2" },
+		{ "toggleButton3" }
+	}
+	ruu:map_neighbors(buttonmap)
 end
 
 function on_input(self, action_id, action)
