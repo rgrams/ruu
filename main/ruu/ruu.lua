@@ -293,11 +293,42 @@ local function release_inputField(self, dontfire, keyboard)
 	end
 end
 
+local function focus_inputField(self)
+	if not self.focused then
+		self.focused = true
+		theme.focus_btn(self)
+		self:setText(self.text)
+	end
+end
+
+local function unfocus_inputField(self)
+	if self.focused then
+		if self.pressed then self:release(true) end
+		self.focused = false
+		theme.unfocus_btn(self)
+		gui.set_position(self.textNode, self.textOriginPos)
+		gui.set_position(self.cursorNode, self.cursorPos)
+	end
+end
+
 local function inputField_setText(self, text)
 	self.text = text
 	gui.set_text(self.textNode, self.text)
-	self.cursorPos.x = gui.get_text_metrics(self.font, self.text .. self.endTag).width + self.textOriginX - self.endTagLength
-	gui.set_position(self.cursorNode, self.cursorPos)
+	self.cursorPos.x = gui.get_text_metrics(self.font, self.text .. self.endTag).width + self.textOriginPos.x - self.endTagLength
+
+	if self.cursorPos.x > self.halfInsideWidth then -- cursor is out of view, scroll it to the left
+		local offset = self.cursorPos.x - self.halfInsideWidth
+		self.textPos.x = self.textOriginPos.x - offset
+		gui.set_position(self.textNode, self.textPos)
+		local x = self.cursorPos.x
+		self.cursorPos.x = self.halfInsideWidth
+		gui.set_position(self.cursorNode, self.cursorPos)
+		self.cursorPos.x = x -- store un-scrolled value of cursorPos for unfocus
+	else -- make sure text gets back to the origin pos
+		gui.set_position(self.textNode, self.textOriginPos)
+		gui.set_position(self.cursorNode, self.cursorPos)
+	end
+
 	if self.editfunc then self.editfunc(self.text) end
 end
 
@@ -645,7 +676,11 @@ function M.new_inputField(key, name, active, editfunc, confirmfunc, placeholderT
 	self.endTagLength = gui.get_text_metrics(self.font, self.endTag).width
 	self.placeholderText = placeholderText or ""
 	self.cursorPos = gui.get_position(self.cursorNode)
-	self.textOriginX = gui.get_position(self.textNode).x
+	self.textOriginPos = gui.get_position(self.textNode)
+	self.textPos = vmath.vector3(self.textOriginPos)
+	self.halfInsideWidth = gui.get_size(gui.get_node(self.name .. "/inside")).x / 2 - gui.get_size(self.cursorNode).x / 2
+	self.focus = focus_inputField
+	self.unfocus = unfocus_inputField
 	self.setText = inputField_setText
 	self.backspace = inputField_backspace
 	self.textInput = inputField_textInput

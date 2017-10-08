@@ -3123,7 +3123,7 @@ nodes {
   layer: ""
   inherit_alpha: true
   alpha: 1.0
-  template: "/main/ruu/ruu compound widget templates/template_inputField.gui"
+  template: "/main/ruu/widget templates/template_inputField.gui"
   template_node_child: false
 }
 nodes {
