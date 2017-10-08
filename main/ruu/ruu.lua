@@ -296,7 +296,7 @@ end
 local function focus_inputField(self)
 	if not self.focused then
 		self.focused = true
-		theme.focus_btn(self)
+		theme.focus_inputField(self)
 		self:setText(self.text)
 	end
 end
@@ -305,7 +305,7 @@ local function unfocus_inputField(self)
 	if self.focused then
 		if self.pressed then self:release(true) end
 		self.focused = false
-		theme.unfocus_btn(self)
+		theme.unfocus_inputField(self)
 		gui.set_position(self.textNode, self.textOriginPos)
 		gui.set_position(self.cursorNode, self.cursorPos)
 	end
@@ -689,6 +689,7 @@ function M.new_inputField(key, name, active, editfunc, confirmfunc, placeholderT
 	self.release = release_inputField
 	self.press = press_inputField
 	self.confirmfunc = confirmfunc
+	theme.init_inputField(self)
 end
 
 -- Group, Enable - Activates all buttons in the group and makes sure the root node is enabled (visible).
