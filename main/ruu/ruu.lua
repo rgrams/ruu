@@ -242,6 +242,7 @@ local function slider_setHandleLength(self, newLength)
 		size.x = self.handleLength
 		gui.set_size(self.node, size)
 	end
+	theme.slider_setHandleLength(self)
 end
 
 -- Scroll Box
@@ -636,9 +637,9 @@ function M.new_slider(key, name, active, pressfunc, releasefunc, dragfunc, lengt
 	button.setHandleLength = slider_setHandleLength
 
 	-- set starting pos, etc.
+	theme.init_btn(button)
 	button.pos = gui.get_position(button.node) -- will use the current Y and Z and only change X
 	button:setHandleLength(button.handleLength)
-	theme.init_btn(button)
 	return button
 end
 
@@ -656,6 +657,7 @@ function M.new_scrollBox(key, name, childname, active, horiz, scrollbarname, the
 	box.unhover = scrollBox_unhover
 	box.press = scrollBox_press
 	box.release = scrollBox_release
+	box.focus = function() end
 
 	local handleLength = box.viewLength/(box.scrollLength) * box.viewLength -- assuming the scrollbar is the same length as the mask
 	local scrollbar = M.new_slider(key, scrollbarname, active, nil, nil, function(fraction) box:scroll(fraction) end, box.viewLength, handleLength, 1, true)

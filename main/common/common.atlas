@@ -25,6 +25,9 @@ images {
 images {
   image: "/main/common/textures/Triangle_64px.png"
 }
+images {
+  image: "/main/common/textures/Square_border_64.png"
+}
 margin: 0
-extrude_borders: 0
+extrude_borders: 2
 inner_padding: 0
