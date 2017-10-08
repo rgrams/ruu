@@ -506,7 +506,7 @@ function M.widgets_setStencil(key, stencilNode, ...)
 	end
 end
 
-function M.new_baseWidget(key, name, active, pressfunc, releasefunc)
+function M.new_baseWidget(key, name, active, pressfunc, releasefunc, theme_type)
 	verify_key(key, "new_baseWidget")
 	active = active or false
 	local widget = {
@@ -530,25 +530,26 @@ function M.new_baseWidget(key, name, active, pressfunc, releasefunc)
 		neighbor_prev = nil,
 		focus = focus_button,
 		unfocus = unfocus_button,
-		focus_neighbor = button_focus_neighbor
+		focus_neighbor = button_focus_neighbor,
+		theme_type = theme_type
 	}
 	wgts[key].all[name] = widget
 	if active then wgts[key].active[name] = widget end
 	return widget
 end
 
-function M.new_button(key, name, active, pressfunc, releasefunc)
+function M.new_button(key, name, active, pressfunc, releasefunc, theme_type)
 	if type(key) == "table" then key = key[M.keyName] end
-	local button = M.new_baseWidget(key, name, active, pressfunc, releasefunc)
+	local button = M.new_baseWidget(key, name, active, pressfunc, releasefunc, theme_type)
 	button.textnode = gui.get_node(name .. "/text")
 	button.text = gui.get_text(button.textnode)
 	theme.init_btn(button)
 	return button
 end
 
-function M.new_toggleButton(key, name, active, pressfunc, releasefunc, checked)
+function M.new_toggleButton(key, name, active, pressfunc, releasefunc, checked, theme_type)
 	if type(key) == "table" then key = key[M.keyName] end
-	local button = M.new_baseWidget(key, name, active, pressfunc, releasefunc)
+	local button = M.new_baseWidget(key, name, active, pressfunc, releasefunc, theme_type)
 	button.checked = checked
 	button.textnode = gui.get_node(name .. "/text")
 	button.text = gui.get_text(button.textnode)
@@ -557,11 +558,11 @@ function M.new_toggleButton(key, name, active, pressfunc, releasefunc, checked)
 	return button
 end
 
-function M.new_radioButtonGroup(key, namesList, active, pressfunc, releasefunc, checkedName)
+function M.new_radioButtonGroup(key, namesList, active, pressfunc, releasefunc, checkedName, theme_type)
 	if type(key) == "table" then key = key[M.keyName] end
 	local buttons = {}
 	for i, name in ipairs(namesList) do
-		local button = M.new_baseWidget(key, name, active, pressfunc, releasefunc)
+		local button = M.new_baseWidget(key, name, active, pressfunc, releasefunc, theme_type)
 		button.textnode = gui.get_node(name .. "/text")
 		button.text = gui.get_text(button.textnode)
 		button.checked = name == checkedName
@@ -578,9 +579,9 @@ function M.new_radioButtonGroup(key, namesList, active, pressfunc, releasefunc, 
 	end
 end
 
-function M.new_slider(key, name, active, pressfunc, releasefunc, dragfunc, length, handleLength, startFraction, autoResizeHandle)
+function M.new_slider(key, name, active, pressfunc, releasefunc, dragfunc, length, handleLength, startFraction, autoResizeHandle, theme_type)
 	if type(key) == "table" then key = key[M.keyName] end
-	local button = M.new_baseWidget(key, name, active, pressfunc, releasefunc)
+	local button = M.new_baseWidget(key, name, active, pressfunc, releasefunc, theme_type)
 	button.rootNode = gui.get_node(name .. "/root")
 	button.endpointNode = gui.get_node(name .. "/endpoint")
 	local rot = math.rad(gui.get_rotation(button.rootNode).z)
@@ -610,9 +611,9 @@ function M.new_slider(key, name, active, pressfunc, releasefunc, dragfunc, lengt
 	return button
 end
 
-function M.new_scrollBox(key, name, childname, active, horiz, scrollbarname)
+function M.new_scrollBox(key, name, childname, active, horiz, scrollbarname, theme_type)
 	if type(key) == "table" then key = key[M.keyName] end
-	local box = M.new_baseWidget(key, name, active)
+	local box = M.new_baseWidget(key, name, active, nil, nil, theme_type)
 	box.horiz = horiz
 	box.child = gui.get_node(childname)
 	box.viewLength = horiz and gui.get_size(box.node).x or gui.get_size(box.node).y -- size of mask
@@ -634,9 +635,9 @@ function M.new_scrollBox(key, name, childname, active, horiz, scrollbarname)
 	return box
 end
 
-function M.new_inputField(key, name, active, editfunc, confirmfunc, placeholderText)
+function M.new_inputField(key, name, active, editfunc, confirmfunc, placeholderText, theme_type)
 	if type(key) == "table" then key = key[M.keyName] end
-	local self = M.new_baseWidget(key, name, active, nil, nil)
+	local self = M.new_baseWidget(key, name, active, nil, nil, theme_type)
 	self.textNode = gui.get_node(self.name .. "/text")
 	self.cursorNode = gui.get_node(self.name .. "/cursor")
 	self.font = gui.get_font(self.textNode)
