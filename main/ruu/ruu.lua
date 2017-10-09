@@ -24,6 +24,7 @@ M.INPUT_TEXT = hash("text")
 M.INPUT_BACKSPACE = hash("backspace")
 
 M.INPUT_SCROLL_DIST = 25
+M.INPUT_SLIDER_NUDGE_DIST = 5
 
 -- ##########  CONTROL MODE  ##########
 -- KEYBOARD: For keyboard only, or keyboard and mouse - Buttons stay hovered until another is hovered. Always hovers a default initial button.
@@ -109,6 +110,9 @@ local function previ(t, i) -- Previous index in array (looping)
 	return (i - 1) >= 1 and (i - 1) or #t
 end
 
+local function sign(x)
+	return x >= 0 and 1 or -1
+end
 
 local function clamp(x, max, min) -- much more legible than math.min(math.max(x, min), max)
 	return x > max and max or (x < min and min or x)
@@ -251,6 +255,31 @@ local function release_slider(self, dontfire) -- default is to fire
 		if self.releasefunc and not dontfire then self.releasefunc() end
 		wgts[self.key].dragging[self] = nil
 		wgts[self.key].dragCount = wgts[self.key].dragCount - 1
+	end
+end
+
+local neighbor_dirs = {
+	neighbor_up = vmath.vector3(0, 1, 0),
+	neighbor_down = vmath.vector3(0, -1, 0),
+	neighbor_left = vmath.vector3(-1, 0, 0),
+	neighbor_right = vmath.vector3(1, 0, 0)
+}
+
+local dot45 = math.sqrt(2)/2
+
+local function slider_focus_neighbor(self, action_id)
+	local dirKey = M.INPUT_DIRKEY[action_id]
+	local dirDot = vmath.dot(neighbor_dirs[dirKey], self.angleVec)
+	if math.abs(dirDot) >= dot45 then
+		local dotSign = sign(dirDot)
+		self:drag(self.angleVec.x * self.nudgeDist * dotSign, self.angleVec.y * self.nudgeDist * dotSign)
+	else
+		local neighbor = self[dirKey]
+		if neighbor then
+			self:unfocus()
+			neighbor:focus()
+			wgts[self.key].cur_focus = neighbor
+		end
 	end
 end
 
@@ -455,7 +484,7 @@ function M.on_input(key, action_id, action)
 			for i, v in ipairs(wgts[key].hovered) do if v.scroll then v:scroll(-M.INPUT_SCROLL_DIST, -M.INPUT_SCROLL_DIST) end end
 			M.update_mouse(key, action.x, action.y, action.dx, action.dy)
 		end
-	elseif M.INPUT_DIRKEY[action_id] and action.pressed then -- Keyboard/Gamepad navigation
+	elseif M.INPUT_DIRKEY[action_id] and (action.pressed or action.repeated) then -- Keyboard/Gamepad navigation
 		if wgts[key].cur_focus then
 			wgts[key].cur_focus:focus_neighbor(action_id)
 		end
@@ -675,7 +704,7 @@ function M.new_radioButtonGroup(key, namesList, active, pressfunc, releasefunc, 
 	end
 end
 
-function M.new_slider(key, name, active, pressfunc, releasefunc, dragfunc, length, handleLength, startFraction, autoResizeHandle, theme_type)
+function M.new_slider(key, name, active, pressfunc, releasefunc, dragfunc, length, handleLength, startFraction, autoResizeHandle, nudgeDist, theme_type)
 	if type(key) == "table" then key = key[M.keyName] end
 	local button = M.new_baseWidget(key, name, active, pressfunc, releasefunc, theme_type)
 	button.rootNode = gui.get_node(name .. "/root") -- only used to get slider rotation
@@ -692,11 +721,13 @@ function M.new_slider(key, name, active, pressfunc, releasefunc, dragfunc, lengt
 	--button.startx = origin X (0.0) + handle length/2
 	--button.endx = startx + slideLength
 
+	button.nudgeDist = nudgeDist or M.INPUT_SLIDER_NUDGE_DIST -- distance the slider moves on directional key presses
 	button.fraction = startFraction or 0 -- 0.0-1.0 position of slider in its range. 0.0 --> left/top
 	button.dragVec = vmath.vector3() -- used for (dx, dy) in drag function to avoid creating a new vector every frame of dragging
 	button.autoResize = autoResizeHandle -- should resize the actual handle node to match `handleLength`. Defaults to nil/false
 	button.press = press_slider
 	button.release = release_slider
+	button.focus_neighbor = slider_focus_neighbor
 	button.dragfunc = dragfunc -- called continuously whenever the slider is moved.
 	button.drag = drag_slider
 	button.setHandleLength = slider_setHandleLength
@@ -708,7 +739,7 @@ function M.new_slider(key, name, active, pressfunc, releasefunc, dragfunc, lengt
 	return button
 end
 
-function M.new_scrollArea(key, name, active, pressfunc, releasefunc, dragfunc, startFraction, theme_type)
+function M.new_scrollArea(key, name, active, pressfunc, releasefunc, dragfunc, startFraction, nudgeDist, theme_type)
 	if type(key) == "table" then key = key[M.keyName] end
 	local button = M.new_baseWidget(key, name, active, pressfunc, releasefunc, theme_type)
 	button.insideNode = gui.get_node(name .. "/inside")
@@ -724,11 +755,13 @@ function M.new_scrollArea(key, name, active, pressfunc, releasefunc, dragfunc, s
 	--button.startx = origin X (0.0) + handle length/2
 	--button.endx = startx + slideLength
 
+	button.nudgeDist = -(nudgeDist or M.INPUT_SCROLL_DIST) -- dist the slider moves on directional key presses (negative to scroll instead of drag)
 	button.fraction = startFraction or 0 -- 0.0-1.0 position of slider in its range. 0.0 --> left/top
 	button.dragVec = vmath.vector3() -- used for (dx, dy) in drag function to avoid creating a new vector every frame of dragging
 	button.autoResize = false -- should resize the actual handle node to match `handleLength`. Defaults to nil/false
 	button.press = press_slider
 	button.release = release_slider
+	button.focus_neighbor = slider_focus_neighbor
 	button.dragfunc = dragfunc -- called continuously whenever the slider is moved.
 	button.drag = drag_slider
 	button.scroll = function(self, dx, dy) drag_slider(self, -dx, -dy) end
