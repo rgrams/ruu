@@ -245,7 +245,7 @@ local function press_slider(self)
 end
 
 local function release_slider(self, dontfire) -- default is to fire
-	if self.pressed and self.hovered then
+	if self.pressed and (self.hovered or self.focused) then
 		theme.release_btn(self)
 		self.pressed = false
 		if self.releasefunc and not dontfire then self.releasefunc() end
