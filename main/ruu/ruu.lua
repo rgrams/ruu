@@ -105,6 +105,25 @@ local function clamp(x, max, min) -- much more legible than math.min(math.max(x,
 	return x > max and max or (x < min and min or x)
 end
 
+local pivots = {
+	 [gui.PIVOT_CENTER] = vmath.vector3(0, 0, 0),
+	 [gui.PIVOT_N] = vmath.vector3(0, 1, 0),
+	 [gui.PIVOT_NE] = vmath.vector3(1, 1, 0),
+	 [gui.PIVOT_E] = vmath.vector3(1, 0, 0),
+	 [gui.PIVOT_SE] = vmath.vector3(1, -1, 0),
+	 [gui.PIVOT_S] = vmath.vector3(0, -1, 0),
+	 [gui.PIVOT_SW] = vmath.vector3(-1, -1, 0),
+	 [gui.PIVOT_W] = vmath.vector3(-1, 0, 0),
+	 [gui.PIVOT_NW] = vmath.vector3(-1, 1, 0)
+ }
+
+local function get_center_position(node) -- pivot-independent get_position for scroll areas
+	local pivotVec = pivots[gui.get_pivot(node)]
+	local size = gui.get_size(node)
+	pivotVec.x = pivotVec.x * size.x * 0.5;  pivotVec.y = pivotVec.y * size.y * 0.5
+	return gui.get_position(node) - pivotVec
+end
+
 -- ---------------------------------------------------------------------------------
 --|					  PRIVATE FUNCTIONS 3: WIDGET BEHAVIOR							|
 -- ---------------------------------------------------------------------------------
