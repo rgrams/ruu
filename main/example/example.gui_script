@@ -22,11 +22,15 @@ function init(self)
 	ruu:new_inputField("inputField", true, nil, function(text) print("Inputfield Confirm - ", text) end, "Text here")
 
 	local buttonmap = {
-		{ "button1" },
-		{ "button2" },
-		{ "toggleButton1" },
+		{ "slider1" },
+		{ false, "radBtn1" },
+		{ "button1", "radBtn2" },
+		{ "button2", "radBtn3" },
+		{ false, "radBtn4" },
+		{ "toggleButton1", "radBtn5" },
 		{ "toggleButton2" },
-		{ "toggleButton3" }
+		{ "toggleButton3" },
+		{ "scrollbar1" }
 	}
 	ruu:map_neighbors(buttonmap)
 

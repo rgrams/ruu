@@ -89,17 +89,26 @@ end
 
 local function nextval(t, i) -- looping, used for setting up button list neighbors
 	if #t == 0 then return false end
-	i = i + 1
-	if i > #t then i = 1 end
+	i = (i + 1) <= #t and (i + 1) or 1
 	return t[i]
 end
 
 local function prevval(t, i) -- looping, used for setting up button list neighbors
 	if #t == 0 then return false end
-	i = i - 1
-	if i < 1 then i = #t end
+	i = (i - 1) >= 1 and (i - 1) or #t
 	return t[i]
 end
+
+local function nexti(t, i) -- Next index in array (looping)
+	if #t == 0 then return 0 end
+	return (i + 1) <= #t and (i + 1) or 1
+end
+
+local function previ(t, i) -- Previous index in array (looping)
+	if #t == 0 then return 0 end
+	return (i - 1) >= 1 and (i - 1) or #t
+end
+
 
 local function clamp(x, max, min) -- much more legible than math.min(math.max(x, min), max)
 	return x > max and max or (x < min and min or x)
@@ -509,6 +518,28 @@ function M.btnlist_autoset_neighbors(key, list, vertical)
 	end
 end
 
+local function map_get_next(wgt, map, iy, ix, dirx, diry) -- local function for M.map_neighbors
+	-- 'map' is the whole map or just the x-list, depending on usage
+	local found = nil
+	while not found do
+		if diry == 1 then
+			found = prevval(map, iy)[ix]
+			iy = previ(map, iy)
+		elseif diry == -1 then
+			found = nextval(map, iy)[ix]
+			iy = nexti(map, iy)
+		elseif dirx == -1 then
+			found = prevval(map, ix)
+			ix = previ(map, ix)
+		elseif dirx == 1 then
+			found = nextval(map, ix)
+			ix = nexti(map, ix)
+		else found = wgt
+		end
+	end
+	return found ~= wgt and found or nil
+end
+
 function M.map_neighbors(key, map)
 	key = key[M.keyName]
 	-- validate map values and convert from string names to widget objects
@@ -525,12 +556,16 @@ function M.map_neighbors(key, map)
 	for iy, list in ipairs(map) do
 		for ix, wgt in ipairs(list) do
 			if #map > 1 then -- don't loop to self if there are no others in this dimension
-				wgt.neighbor_up = prevval(map, iy)[ix]
-				wgt.neighbor_down = nextval(map, iy)[ix]
+				if wgt then
+					wgt.neighbor_up = map_get_next(wgt, map, iy, ix, 0, 1)
+					wgt.neighbor_down = map_get_next(wgt, map, iy, ix, 0, -1)
+				end
 			end
 			if #list > 1 then -- don't loop to self if there are no others in this dimension
-				wgt.neighbor_left = prevval(list, ix)
-				wgt.neighbor_right = nextval(list, ix)
+				if wgt then
+					wgt.neighbor_left = map_get_next(wgt, list, iy, ix, -1, 0)
+					wgt.neighbor_right = map_get_next(wgt, list, iy, ix, 1, 0)
+				end
 			end
 		end
 	end

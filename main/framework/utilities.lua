@@ -61,16 +61,13 @@ end
 -- Next index in array (looping)
 function M.nexti(t, i)
 	if #t == 0 then return 0 end
-	i = i + 1
-	if i > #t then i = 1 end
-	return i
+	return (i + 1) <= #t and (i + 1) or 1
 end
 
 -- Previous index in array (looping)
 function M.previ(t, i)
-	i = i - 1
-	if i < 1 then i = #t end
-	return i
+	if #t == 0 then return 0 end
+	return (i - 1) >= 1 and (i - 1) or #t
 end
 
 -- Next value in array (looping)
