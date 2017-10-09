@@ -37,7 +37,9 @@ M.MODE_MOUSE = 2
 -- Rather, everything is unhovered on touch release.
 M.MODE_MOBILE = 3
 
-M.mode = M.MODE_KEYBOARD
+M.mode = M.MODE_MOBILE
+theme.mode = M.mode
+
 
 local sysInfo = sys.get_sys_info()
 if sysInfo.system_name == "Android" or sysInfo.system_name == "iPhone OS" then print("mobile build") M.mode = M.MODE_MOBILE end

@@ -1,6 +1,12 @@
 
 local M = {}
 
+local MODE_KEYBOARD = 1
+local MODE_MOUSE = 2
+local MODE_MOBILE = 3
+
+M.mode = MODE_KEYBOARD
+
 local normalcolor = vmath.vector4(0.3, 0.3, 0.3, 1)
 local hovercolor = vmath.vector4(0.45, 0.45, 0.45, 1)
 local presscolor = vmath.vector4(0.8, 0.8, 0.8, 1)
@@ -51,11 +57,15 @@ function M.unhover_btn(self)
 end
 
 function M.focus_btn(self)
-	gui.set_enabled(self.focusIndicator, true)
+	if M.mode == MODE_KEYBOARD then
+		gui.set_enabled(self.focusIndicator, true)
+	end
 end
 
 function M.unfocus_btn(self)
-	gui.set_enabled(self.focusIndicator, false)
+	if M.mode == MODE_KEYBOARD then
+		gui.set_enabled(self.focusIndicator, false)
+	end
 end
 
 function M.press_btn(self)
