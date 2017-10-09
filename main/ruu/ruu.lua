@@ -237,29 +237,31 @@ local function release_slider(self, dontfire) -- default is to fire
 	end
 end
 
-local function drag_slider(self, dx, dy)
+local function drag_slider(self, dx, dy, axis)
+	axis = self.axis or "x"
 	self.dragVec.x = dx;  self.dragVec.y = dy
 	local dragDist = vmath.dot(self.dragVec, self.angleVec)
-	self.pos.x = clamp(self.pos.x + dragDist, self.endx, self.startx)
-	self.fraction = self.slideLength == 0 and 0 or (self.pos.x - self.startx)/self.slideLength -- have to avoid dividing by zero
-	gui.set_position(self.node, self.pos)
+	self.pos[axis] = clamp(self.pos[axis] + dragDist, self.endx, self.startx)
+	self.fraction = self.slideLength == 0 and 0 or (self.pos[axis] - self.startx)/self.slideLength -- have to avoid dividing by zero
+	gui.set_position(self.slideNode, self.pos)
 
 	if self.dragfunc then self.dragfunc(self.fraction) end
 end
 
-local function slider_setHandleLength(self, newLength)
-	self.handleLength = clamp(newLength, self.length, 0)
-	self.slideLength = self.length - self.handleLength
+local function slider_setHandleLength(self, newLength, axis)
+	axis = self.axis or "x"
+	self.handleLength = clamp(newLength, self.baseLength, 0)
+	self.slideLength = self.baseLength - self.handleLength
 	self.startx = self.handleLength/2
 	self.endx = self.startx + self.slideLength
 
-	self.pos.x = vmath.lerp(self.fraction, self.startx, self.endx)
-	gui.set_position(self.node, self.pos)
+	self.pos[axis] = vmath.lerp(self.fraction, self.startx, self.endx)
+	gui.set_position(self.slideNode, self.pos)
 
 	if self.autoResize then -- for scroll bar style sliders
-		local size = gui.get_size(self.node)
-		size.x = self.handleLength
-		gui.set_size(self.node, size)
+		local size = gui.get_size(self.slideNode)
+		size[axis] = self.handleLength
+		gui.set_size(self.slideNode, size)
 	end
 	theme.slider_setHandleLength(self)
 end
@@ -635,18 +637,19 @@ function M.new_slider(key, name, active, pressfunc, releasefunc, dragfunc, lengt
 	local button = M.new_baseWidget(key, name, active, pressfunc, releasefunc, theme_type)
 	button.rootNode = gui.get_node(name .. "/root")
 	button.endpointNode = gui.get_node(name .. "/endpoint")
+	button.slideNode = button.node
 	local rot = math.rad(gui.get_rotation(button.rootNode).z)
 	button.angleVec = vmath.vector3(math.cos(rot), math.sin(rot), 0)
-	button.length = length or gui.get_position(button.endpointNode).x -- length of slider range
+	button.baseLength = length or gui.get_position(button.endpointNode).x -- base length of slider range
 	button.handleLength = handleLength or gui.get_size(button.node).x -- "physical" length of slider handle - default to x of node, input 0 if desired.
 	-- meant for scroll bar style sliders where the handle fits inside the bar.
 
 	--			The following are set in button:setHandleLength()
-	--button.slideLength = length - handleLength : actual distance slider can move
+	--button.slideLength = baseLength - handleLength  --actual distance slider can move
 	--button.startx = origin X (0.0) + handle length/2
 	--button.endx = startx + slideLength
 
-	button.fraction = startFraction or 0 -- 0.0-1.0 position of slider in its range. 0.0 --> left/bottom
+	button.fraction = startFraction or 0 -- 0.0-1.0 position of slider in its range. 0.0 --> left/top
 	button.dragVec = vmath.vector3() -- used for (dx, dy) in drag function to avoid creating a new vector every frame of dragging
 	button.autoResize = autoResizeHandle -- should resize the actual handle node to match `handleLength`. Defaults to nil/false
 	button.press = press_slider
@@ -658,6 +661,38 @@ function M.new_slider(key, name, active, pressfunc, releasefunc, dragfunc, lengt
 	-- set starting pos, etc.
 	theme.init_btn(button)
 	button.pos = gui.get_position(button.node) -- will use the current Y and Z and only change X
+	button:setHandleLength(button.handleLength)
+	return button
+end
+
+function M.new_scrollArea(key, name, active, pressfunc, releasefunc, dragfunc, startFraction, theme_type)
+	if type(key) == "table" then key = key[M.keyName] end
+	local button = M.new_baseWidget(key, name, active, pressfunc, releasefunc, theme_type)
+	button.insideNode = gui.get_node(name .. "/inside")
+	button.slideNode = button.insideNode
+	button.axis = "y" -- movement axis at rotation 0
+	local rot = math.rad(gui.get_rotation(button.node).z + (button.axis == "y" and 90 or 0))
+	button.angleVec = vmath.vector3(math.cos(rot), math.sin(rot), 0)
+	button.baseLength = gui.get_size(button.insideNode)[button.axis] -- length of slider range
+	button.handleLength = gui.get_size(button.node)[button.axis]
+
+	--			The following are set in button:setHandleLength()
+	--button.slideLength = baseLength - handleLength : actual distance slider can move
+	--button.startx = origin X (0.0) + handle length/2
+	--button.endx = startx + slideLength
+
+	button.fraction = startFraction or 0 -- 0.0-1.0 position of slider in its range. 0.0 --> left/top
+	button.dragVec = vmath.vector3() -- used for (dx, dy) in drag function to avoid creating a new vector every frame of dragging
+	button.autoResize = false -- should resize the actual handle node to match `handleLength`. Defaults to nil/false
+	button.press = press_slider
+	button.release = release_slider
+	button.dragfunc = dragfunc -- called continuously whenever the slider is moved.
+	button.drag = drag_slider
+	button.setHandleLength = slider_setHandleLength
+
+	-- set starting pos, etc.
+	theme.init_btn(button)
+	button.pos = gui.get_position(button.insideNode) -- will use the current Y and Z and only change X
 	button:setHandleLength(button.handleLength)
 	return button
 end
