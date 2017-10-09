@@ -23,7 +23,7 @@ M.INPUT_SCROLLDOWN = hash("scroll down")
 M.INPUT_TEXT = hash("text")
 M.INPUT_BACKSPACE = hash("backspace")
 
-M.INPUT_SCROLL_DIST = 10
+M.INPUT_SCROLL_DIST = 25
 
 -- ##########  CONTROL MODE  ##########
 -- KEYBOARD: For keyboard only, or keyboard and mouse - Buttons stay hovered until another is hovered. Always hovers a default initial button.
@@ -254,8 +254,8 @@ local function release_slider(self, dontfire) -- default is to fire
 	end
 end
 
-local function drag_slider(self, dx, dy, axis)
-	axis = self.axis or "x"
+local function drag_slider(self, dx, dy)
+	local axis = self.axis or "x"
 	self.dragVec.x = dx;  self.dragVec.y = dy
 	local dragDist = vmath.dot(self.dragVec, self.angleVec)
 	self.pos[axis] = clamp(self.pos[axis] + dragDist, self.endx, self.startx)
@@ -265,8 +265,8 @@ local function drag_slider(self, dx, dy, axis)
 	if self.dragfunc then self.dragfunc(self.fraction) end
 end
 
-local function slider_setHandleLength(self, newLength, axis)
-	axis = self.axis or "x"
+local function slider_setHandleLength(self, newLength)
+	local axis = self.axis or "x"
 	self.handleLength = clamp(newLength, self.baseLength, 0)
 	self.slideLength = self.baseLength - self.handleLength
 	self.startx = self.handleLength/2
@@ -447,12 +447,12 @@ function M.on_input(key, action_id, action)
 		end
 	elseif action_id == M.INPUT_SCROLLUP then
 		if action.pressed then
-			for i, v in ipairs(wgts[key].hovered) do if v.drag then v:drag(M.INPUT_SCROLL_DIST, M.INPUT_SCROLL_DIST) end end
+			for i, v in ipairs(wgts[key].hovered) do if v.scroll then v:scroll(M.INPUT_SCROLL_DIST, M.INPUT_SCROLL_DIST) end end
 			M.update_mouse(key, action.x, action.y, action.dx, action.dy)
 		end
 	elseif action_id == M.INPUT_SCROLLDOWN then
 		if action.pressed then
-			for i, v in ipairs(wgts[key].hovered) do if v.drag then v:drag(-M.INPUT_SCROLL_DIST, -M.INPUT_SCROLL_DIST) end end
+			for i, v in ipairs(wgts[key].hovered) do if v.scroll then v:scroll(-M.INPUT_SCROLL_DIST, -M.INPUT_SCROLL_DIST) end end
 			M.update_mouse(key, action.x, action.y, action.dx, action.dy)
 		end
 	elseif M.INPUT_DIRKEY[action_id] and action.pressed then -- Keyboard/Gamepad navigation
@@ -731,6 +731,7 @@ function M.new_scrollArea(key, name, active, pressfunc, releasefunc, dragfunc, s
 	button.release = release_slider
 	button.dragfunc = dragfunc -- called continuously whenever the slider is moved.
 	button.drag = drag_slider
+	button.scroll = function(self, dx, dy) drag_slider(self, -dx, -dy) end
 	button.setHandleLength = slider_setHandleLength
 
 	-- set starting pos, etc.
@@ -749,7 +750,7 @@ function M.new_scrollBox(key, name, childname, active, horiz, scrollbarname, the
 	box.childHeight = gui.get_size(box.child).y
 	box.scrollLength = (horiz and gui.get_size(box.child).x or gui.get_size(box.child).y) - box.viewLength -- max movement of child
 	box.range = math.max(0, box.scrollLength)
-	box.scroll = scrollBox_scroll
+	box.scroll_to_fraction = scrollBox_scroll
 	box.hover = scrollBox_hover
 	box.unhover = scrollBox_unhover
 	box.press = scrollBox_press
@@ -757,11 +758,11 @@ function M.new_scrollBox(key, name, childname, active, horiz, scrollbarname, the
 	box.focus = function() end
 
 	local handleLength = box.viewLength/(box.scrollLength) * box.viewLength -- assuming the scrollbar is the same length as the mask
-	local scrollbar = M.new_slider(key, scrollbarname, active, nil, nil, function(fraction) box:scroll(fraction) end, box.viewLength, handleLength, 1, true)
+	local scrollbar = M.new_slider(key, scrollbarname, active, nil, nil, function(fraction) box:scroll_to_fraction(fraction) end, box.viewLength, handleLength, 1, true)
 	scrollbar.scrollBox = box
 	box.scrollbar = scrollbar
-	box.touchScroll = M.mode == M.MODE_MOBILE -- click-drag to scroll (in opposite direction) or not.
-	box.drag = function(self, dx, dy) local a = 1 if self.touchScroll then a = -self.viewLength/(self.scrollLength + self.viewLength) end box.scrollbar:drag(dx*a, dy*a) end
+	box.drag = function(self, dx, dy) local a = -self.viewLength/(self.scrollLength + self.viewLength) box.scrollbar:drag(dx*a, dy*a) end
+	box.scroll = function(self, dx, dy) local a = self.viewLength/(self.scrollLength + self.viewLength) self.scrollbar:drag(dx*a, dy*a) end
 	return box
 end
 
