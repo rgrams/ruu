@@ -133,6 +133,14 @@ local function get_center_position(node) -- pivot-independent get_position for s
 	return gui.get_position(node) - pivotVec
 end
 
+local function safe_get_node(id)
+	if pcall(gui.get_node, id) then
+		return gui.get_node(id)
+	else
+		return nil
+	end
+end
+
 -- ---------------------------------------------------------------------------------
 --|					  PRIVATE FUNCTIONS 3: WIDGET BEHAVIOR							|
 -- ---------------------------------------------------------------------------------
@@ -670,12 +678,12 @@ end
 function M.new_slider(key, name, active, pressfunc, releasefunc, dragfunc, length, handleLength, startFraction, autoResizeHandle, theme_type)
 	if type(key) == "table" then key = key[M.keyName] end
 	local button = M.new_baseWidget(key, name, active, pressfunc, releasefunc, theme_type)
-	button.rootNode = gui.get_node(name .. "/root")
-	button.endpointNode = gui.get_node(name .. "/endpoint")
+	button.rootNode = gui.get_node(name .. "/root") -- only used to get slider rotation
+	button.endpointNode = safe_get_node(name .. "/endpoint") -- optional, only used to get default baseLength
 	button.slideNode = button.node
 	local rot = math.rad(gui.get_rotation(button.rootNode).z)
 	button.angleVec = vmath.vector3(math.cos(rot), math.sin(rot), 0)
-	button.baseLength = length or gui.get_position(button.endpointNode).x -- base length of slider range
+	button.baseLength = length or (button.endpointNode and gui.get_position(button.endpointNode).x or 200) -- base length of slider range
 	button.handleLength = handleLength or gui.get_size(button.node).x -- "physical" length of slider handle - default to x of node, input 0 if desired.
 	-- meant for scroll bar style sliders where the handle fits inside the bar.
 
