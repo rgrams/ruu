@@ -37,7 +37,7 @@ M.MODE_MOUSE = 2
 -- Rather, everything is unhovered on touch release.
 M.MODE_MOBILE = 3
 
-M.mode = M.MODE_MOBILE
+M.mode = M.MODE_KEYBOARD
 theme.mode = M.mode
 
 
@@ -528,33 +528,13 @@ function M.btn_set_text(key, button, text)
 	gui.set_text(b.textnode, text)
 end
 
-function M.btn_set_neighbors(key, button, up, down, left, right)
+function M.widget_setNeighbors(key, widget, up, down, left, right)
 	key = key[M.keyName]
-	local b = wgts[key].all[button]
-	if up then b.neighbor_up = wgts[key].all[up] end
-	if down then b.neighbor_down = wgts[key].all[down] end
-	if left then b.neighbor_left = wgts[key].all[left] end
-	if right then b.neighbor_right = wgts[key].all[right] end
-end
-
--- Button List, Auto-set Neighbors - Set the buttons' neighbors so they are a wrapping list.
-function M.btnlist_autoset_neighbors(key, list, vertical)
-	key = key[M.keyName]
-	local reflist = {}
-	for i, v in ipairs(list) do
-		table.insert(reflist, wgts[key].all[v])
-	end
-	if vertical then -- vertical list
-		for i, b in ipairs(reflist) do
-			b.neighbor_up = prevval(reflist, i)
-			b.neighbor_down = nextval(reflist, i)
-		end
-	else -- horizontal list (left-to-right)
-		for i, b in ipairs(reflist) do
-			b.neighbor_left = prevval(reflist, i)
-			b.neighbor_right = nextval(reflist, i)
-		end
-	end
+	local w = wgts[key].all[widget]
+	if up then w.neighbor_up = wgts[key].all[up] end
+	if down then w.neighbor_down = wgts[key].all[down] end
+	if left then w.neighbor_left = wgts[key].all[left] end
+	if right then w.neighbor_right = wgts[key].all[right] end
 end
 
 local function map_get_next(wgt, map, iy, ix, dirx, diry) -- local function for M.map_neighbors
@@ -872,8 +852,15 @@ function M.new_group(key, name, rootnode, children, autoset_wgts_vert, autoset_w
 	}
 	if disable then gui.set_enabled(group.node, false) end
 	wgts[key].groups[name] = group
-	if autoset_wgts_vert then M.btnlist_autoset_neighbors(key, children, true)
-	elseif autoset_wgts_horiz then M.btnlist_autoset_neighbors(key, children, false)
+	local childMap = {}
+	if autoset_wgts_vert then
+		for i, v in ipairs(children) do table.insert(childMap, { v }) end
+		M.map_neighbors(key, childMap)
+	elseif autoset_wgts_horiz then
+		local xlist = {}
+		table.insert(childMap, xlist)
+		for i, v in ipairs(children) do table.insert(xlist, v) end
+		M.map_neighbors(key, childMap)
 	end
 end
 
