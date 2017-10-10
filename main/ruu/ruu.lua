@@ -192,6 +192,7 @@ local function focus_button(self)
 	if not self.focused then
 		self.focused = true
 		theme.focus_btn(self)
+		if self.scrollArea then self.scrollArea:scroll_to_child(self) end
 	end
 end
 
@@ -337,6 +338,42 @@ local function slider_setHandleLength(self, newLength)
 		gui.set_size(self.slideNode, size)
 	end
 	theme.slider_setHandleLength(self)
+end
+
+-- Scroll Area
+local function drag_scrollArea(self, dx, dy)
+	self.dragVec.x = dx;  self.dragVec.y = dy
+	local dragDist = vmath.dot(self.dragVec, self.angleVec)
+	self.pos.y = clamp(self.pos.y + dragDist, self.endx, self.startx)
+	self.fraction = self.slideLength == 0 and 0 or (self.pos.y - self.startx)/self.slideLength -- have to avoid dividing by zero
+	gui.set_position(self.slideNode, self.pos)
+
+	if self.dragfunc then self.dragfunc(self.fraction) end
+end
+
+local function scrollArea_scroll_to_child(self, child)
+	local center = get_center_position(child.node) -- will be relative to scrollArea inside . . . always the same
+
+	local rot = math.rad(gui.get_rotation(child.node).z) -- relative to parent (scrollArea inside)
+	local qRot = vmath.quat_rotation_z(rot)
+	local scale = gui.get_scale(child.node)
+	local size = gui.get_size(child.node) * 0.5
+	size.x = size.x * scale.x;  size.y = size.y * scale.y
+	local invSize = vmath.vector3(size);  invSize.x = -invSize.x
+	size = vmath.rotate(qRot, size)
+	invSize = vmath.rotate(qRot, invSize)
+	local top = math.max(size.y, invSize.y, -size.y, -invSize.y)
+	local bottom = math.min(size.y, invSize.y, -size.y, -invSize.y)
+
+	-- outTop: positive if out top
+	local outTop = (center.y + top + self.pos.y) - self.handleLength/2
+	-- outBottom: negative if out bottom
+	local outBottom = (center.y + bottom + self.pos.y) + self.handleLength/2
+
+	-- multiply by angleVec because drag coordinates are global
+	if outTop > 0 then self:drag(self.angleVec.x * -outTop, self.angleVec.y * -outTop)
+	elseif outBottom < 0 then self:drag(self.angleVec.x * -outBottom, self.angleVec.y * -outBottom)
+	end
 end
 
 -- Scroll Box
@@ -653,6 +690,15 @@ function M.map_neighbors(key, map)
 	]]
 end
 
+function M.add_to_scrollArea(key, scrollArea, ...)
+	key = key[M.keyName]
+	scrollArea = wgts[key].all[scrollArea]
+	for i, v in ipairs({...}) do
+		v = wgts[key].all[v]
+		v.scrollArea = scrollArea
+	end
+end
+
 function M.widgets_setStencil(key, stencilNode, ...)
 	key = key[M.keyName]
 	for i, v in ipairs({...}) do
@@ -774,8 +820,8 @@ function M.new_scrollArea(key, name, active, pressfunc, releasefunc, dragfunc, s
 	button.insideNode = gui.get_node(name .. "/inside")
 	button.slideNode = button.insideNode
 	button.axis = "y" -- movement axis at rotation 0
-	local rot = math.rad(gui.get_rotation(button.node).z + (button.axis == "y" and 90 or 0))
-	button.angleVec = vmath.vector3(math.cos(rot), math.sin(rot), 0)
+	button.rot = math.rad(gui.get_rotation(button.node).z + (button.axis == "y" and 90 or 0))
+	button.angleVec = vmath.vector3(math.cos(button.rot), math.sin(button.rot), 0)
 	button.baseLength = gui.get_size(button.insideNode)[button.axis] -- length of slider range
 	button.handleLength = gui.get_size(button.node)[button.axis]
 
@@ -792,9 +838,10 @@ function M.new_scrollArea(key, name, active, pressfunc, releasefunc, dragfunc, s
 	button.release = release_slider
 	button.focus_neighbor = slider_focus_neighbor
 	button.dragfunc = dragfunc -- called continuously whenever the slider is moved.
-	button.drag = drag_slider
+	button.drag = drag_scrollArea
 	button.scroll = function(self, dx, dy) drag_slider(self, -dx, -dy) end
 	button.setHandleLength = slider_setHandleLength
+	button.scroll_to_child = scrollArea_scroll_to_child
 
 	-- set starting pos, etc.
 	theme.init_btn(button)
