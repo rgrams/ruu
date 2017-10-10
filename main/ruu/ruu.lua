@@ -57,7 +57,7 @@ M.layerPrecision = 1000 -- layer index multiplied by this in get_drawIndex() cal
 local wgts = {} -- FORMAT: wgts[key] = new_context_table()
 
 local function new_context_table()
-	return {all = {}, active = {}, groups = {}, layers = {}, cur_focus = nil, dragging = {}, dragCount = 0, hovered = {}}
+	return {all = {}, active = {}, groups = {}, layers = { [hash("")] = 0 }, cur_focus = nil, dragging = {}, dragCount = 0, hovered = {}}
 	-- widgets are keyed by their node name (string).
 	-- cur_focus = current widget with keyboard focus
 end
@@ -526,11 +526,15 @@ end
 function M.register_layers(key, layers)
 	key = key[M.keyName]
 	local layersList = wgts[key].layers
+	local layerCount = 1
 	for i, v in ipairs(layers) do
 		if type(v) == "string" then v = hash(v)
 		elseif type(v) ~= "userdata" then v = nil print("ERROR: ruu.register_layers() - invalid layer, must be a string or a hash")
 		end
-		if v then layersList[v] = i - 1 end
+		if v and v ~= hash("") then
+			layerCount = layerCount + 1
+			layersList[v] = layerCount - 1
+		end
 	end
 end
 
