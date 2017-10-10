@@ -499,33 +499,41 @@ function M.on_input(key, action_id, action)
 	end
 end
 
-function M.activate_btn(key, button)
+function M.activate_widgets(key, ...)
 	key = key[M.keyName]
-	wgts[key].active[button] = wgts[key].all[button]
+	for i, name in ipairs({...}) do
+		local w = wgts[key].all[name]
+		wgts[key].active[name] = w
+		if w.activate then w:activate() end
+	end
 end
 
-function M.deactivate_btn(key, button)
+function M.deactivate_widgets(key, ...)
 	key = key[M.keyName]
-	local b = wgts[key].all[button]
-	wgts[key].active[button] = nil
-	if b.hovered then b:unhover() end
+	for i, name in ipairs({...}) do
+		wgts[key].active[name] = nil
+		local w = wgts[key].all[name]
+		if w.deactivate then w:deactivate() end
+	end
 end
 
-function M.btn_set_pressfunc(key, button, func)
+function M.widget_setPressfunc(key, widget, func)
 	key = key[M.keyName]
-	wgts[key].all[button].pressfunc = func
+	wgts[key].all[widget].pressfunc = func
 end
 
-function M.btn_set_releasefunc(key, button, func)
+function M.widget_setReleasefunc(key, widget, func)
 	key = key[M.keyName]
-	wgts[key].all[button].releasefunc = func
+	wgts[key].all[widget].releasefunc = func
 end
 
-function M.btn_set_text(key, button, text)
+function M.widget_setText(key, widget, text)
 	key = key[M.keyName]
-	local b = wgts[key].all[button]
-	b.text = text
-	gui.set_text(b.textnode, text)
+	local w = wgts[key].all[widget]
+	if w.textNode then
+		w.text = text
+		gui.set_text(w.textNode, text)
+	end
 end
 
 function M.widget_setNeighbors(key, widget, up, down, left, right)
@@ -648,8 +656,8 @@ end
 function M.new_button(key, name, active, pressfunc, releasefunc, theme_type)
 	if type(key) == "table" then key = key[M.keyName] end
 	local button = M.new_baseWidget(key, name, active, pressfunc, releasefunc, theme_type)
-	button.textnode = gui.get_node(name .. "/text")
-	button.text = gui.get_text(button.textnode)
+	button.textNode = gui.get_node(name .. "/text")
+	button.text = gui.get_text(button.textNode)
 	theme.init_btn(button)
 	return button
 end
@@ -658,8 +666,8 @@ function M.new_toggleButton(key, name, active, pressfunc, releasefunc, checked, 
 	if type(key) == "table" then key = key[M.keyName] end
 	local button = M.new_baseWidget(key, name, active, pressfunc, releasefunc, theme_type)
 	button.checked = checked
-	button.textnode = gui.get_node(name .. "/text")
-	button.text = gui.get_text(button.textnode)
+	button.textNode = gui.get_node(name .. "/text")
+	button.text = gui.get_text(button.textNode)
 	button.release = release_toggleButton
 	theme.init_toggleButton(button)
 	return button
@@ -670,8 +678,8 @@ function M.new_radioButtonGroup(key, namesList, active, pressfunc, releasefunc, 
 	local buttons = {}
 	for i, name in ipairs(namesList) do
 		local button = M.new_baseWidget(key, name, active, pressfunc, releasefunc, theme_type)
-		button.textnode = gui.get_node(name .. "/text")
-		button.text = gui.get_text(button.textnode)
+		button.textNode = gui.get_node(name .. "/text")
+		button.text = gui.get_text(button.textNode)
 		button.checked = name == checkedName
 		button.siblings = {}
 		button.release = release_radioButton
