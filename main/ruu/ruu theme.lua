@@ -70,8 +70,8 @@ end
 
 function M.press_btn(self)
 	gui.set_color(self.node, presscolor)
-	if self.textnode then
-		gui.set_position(self.textnode, gui.get_position(self.textnode) + press_text_offset)
+	if self.textNode then
+		gui.set_position(self.textNode, gui.get_position(self.textNode) + press_text_offset)
 	end
 end
 
@@ -79,8 +79,8 @@ function M.release_btn(self)
 	if self.hovered then gui.set_color(self.node, hovercolor)
 	else gui.set_color(self.node, normalcolor)
 	end
-	if self.textnode then
-		gui.set_position(self.textnode, gui.get_position(self.textnode) - press_text_offset)
+	if self.textNode then
+		gui.set_position(self.textNode, gui.get_position(self.textNode) - press_text_offset)
 	end
 end
 
@@ -89,7 +89,7 @@ function M.release_toggleButton(self)
 	if self.hovered then gui.set_color(self.node, hovercolor)
 	else gui.set_color(self.node, normalcolor)
 	end
-	gui.set_position(self.textnode, gui.get_position(self.textnode) - press_text_offset)
+	gui.set_position(self.textNode, gui.get_position(self.textNode) - press_text_offset)
 end
 
 function M.release_radioButton(self)
@@ -97,7 +97,7 @@ function M.release_radioButton(self)
 	if self.hovered then gui.set_color(self.node, hovercolor)
 	else gui.set_color(self.node, normalcolor)
 	end
-	gui.set_position(self.textnode, gui.get_position(self.textnode) - press_text_offset)
+	gui.set_position(self.textNode, gui.get_position(self.textNode) - press_text_offset)
 end
 
 function M.uncheck_radioButton(self)
