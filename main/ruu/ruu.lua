@@ -45,6 +45,10 @@ local sysInfo = sys.get_sys_info()
 if sysInfo.system_name == "Android" or sysInfo.system_name == "iPhone OS" then print("mobile build") M.mode = M.MODE_MOBILE end
 
 
+M.layerPrecision = 1000 -- layer index multiplied by this in get_drawIndex() calculation
+-- M.layerPrecision = number of different nodes allowed in each layer
+
+
 -- ---------------------------------------------------------------------------------
 --| 					PRIVATE FUNCTIONS 1: SETUP & KEYS							|
 -- ---------------------------------------------------------------------------------
@@ -53,7 +57,7 @@ if sysInfo.system_name == "Android" or sysInfo.system_name == "iPhone OS" then p
 local wgts = {} -- FORMAT: wgts[key] = new_context_table()
 
 local function new_context_table()
-	return {all = {}, active = {}, groups = {}, cur_focus = nil, dragging = {}, dragCount = 0, hovered = {}}
+	return {all = {}, active = {}, groups = {}, layers = {}, cur_focus = nil, dragging = {}, dragCount = 0, hovered = {}}
 	-- widgets are keyed by their node name (string).
 	-- cur_focus = current widget with keyboard focus
 end
@@ -145,6 +149,27 @@ local function safe_get_node(id)
 	else
 		return nil
 	end
+end
+
+local function get_drawIndex(widget) -- combines layer and index to get an absolute draw index
+	local layer = gui.get_layer(widget.node)
+	local index = gui.get_index(widget.node)
+	local li = wgts[widget.key].layers[layer]
+	if not li then print("WARNING: ruu.get_drawIndex() - layer not found in list. May not accurately get top widget unless you call ruu.register_layers") end
+	return (li and (li * M.layerPrecision) or 0) + index
+end
+
+local function get_topWidget(key, wgtList) -- find widget with highest drawIndex
+	local maxI = -1
+	local maxWgt = nil
+	for i, v in ipairs(wgtList) do
+		local drawI = get_drawIndex(v)
+		if drawI > maxI then
+			maxI = drawI
+			maxWgt = v
+		end
+	end
+	return maxWgt
 end
 
 -- ---------------------------------------------------------------------------------
@@ -456,13 +481,12 @@ function M.on_input(key, action_id, action)
 		if action.pressed then
 			for i, v in ipairs(wgts[key].hovered) do v:press() end -- press all hovered nodes
 
-			-- give keyboard focus to first hovered node ###  SHOULD HAVE A BETTER CHOOSING METHOD  ###
-			if wgts[key].hovered[1] then
-				if wgts[key].cur_focus ~= wgts[key].hovered[1] then
-					if wgts[key].cur_focus then wgts[key].cur_focus:unfocus() end
-					wgts[key].cur_focus = wgts[key].hovered[1]
-					wgts[key].cur_focus:focus()
-				end
+			-- give keyboard focus to top hovered widget
+			local topWgt = get_topWidget(key, wgts[key].hovered)
+			if topWgt and topWgt ~= wgts[key].cur_focus then
+				if wgts[key].cur_focus then wgts[key].cur_focus:unfocus() end
+				wgts[key].cur_focus = topWgt
+				topWgt:focus()
 			end
 		elseif action.released then
 			for i, v in ipairs(wgts[key].hovered) do
@@ -496,6 +520,17 @@ function M.on_input(key, action_id, action)
 	elseif action_id == M.INPUT_TEXT then
 		local v = wgts[key].cur_focus
 		if v and v.textInput then v:textInput(action.text) end
+	end
+end
+
+function M.register_layers(key, layers)
+	key = key[M.keyName]
+	local layersList = wgts[key].layers
+	for i, v in ipairs(layers) do
+		if type(v) == "string" then v = hash(v)
+		elseif type(v) ~= "userdata" then v = nil print("ERROR: ruu.register_layers() - invalid layer, must be a string or a hash")
+		end
+		if v then layersList[v] = i - 1 end
 	end
 end
 
