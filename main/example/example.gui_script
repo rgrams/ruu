@@ -1,6 +1,7 @@
 
 local ruu = require "main.ruu.ruu"
 local ruuCompWgts = require "main.ruu.ruu compound widgets"
+local winman = require "main.framework.window_manager"
 
 
 function init(self)
@@ -41,5 +42,9 @@ function init(self)
 end
 
 function on_input(self, action_id, action)
+	if not action_id then
+		-- Mouse movement - first convert dx and dy to be accurate for all window sizes
+		action.screen_dx, action.screen_dy = winman.delta_screen_to_gui(action.screen_dx, action.screen_dy)
+	end
 	ruu:on_input(action_id, action)
 end

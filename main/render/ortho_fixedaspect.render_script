@@ -19,12 +19,33 @@ local final_height
 local xoffset
 local yoffset
 
+local config_width
+local config_height
+
+
+local function update_window(self)
+	window_width = render.get_window_width()
+	window_height = render.get_window_height()
+	winman.halfx, winman.halfy = window_width / 2, window_height / 2
+
+	local zoom_factor = math.min(window_width / original_width, window_height / original_height)
+	winman.scale = zoom_factor
+
+	final_width = original_width * zoom_factor
+	final_height = original_height * zoom_factor
+	xoffset = -(final_width - window_width) / 2
+	yoffset = -(final_height - window_height) / 2
+	winman.barOffset.x, winman.barOffset.y = xoffset, yoffset
+
+	if final_height == window_height then winman.guiScale = config_height/final_height
+	else winman.guiScale = config_width/final_width
+	end
+end
 
 function init(self)
     self.tile_pred = render.predicate({"tile"})
     self.gui_pred = render.predicate({"gui"})
     self.text_pred = render.predicate({"text"})
-    --self.model_pred = render.predicate({"model"})
     self.particle_pred = render.predicate({"particle"})
 
     self.clear_color = vmath.vector4()
@@ -33,12 +54,15 @@ function init(self)
     self.clear_color.z = sys.get_config("render.clear_color_blue", 0)
     self.clear_color.w = sys.get_config("render.clear_color_alpha", 0)
 
+	config_width = sys.get_config("display.width")
+	config_height = sys.get_config("display.height")
+
     self.view = vmath.matrix4()
 	self.projection = vmath.matrix4()
 	original_width = 800
 	original_height = 550
 
-	update_window()
+	update_window(self)
 end
 
 function update(self)
@@ -63,7 +87,6 @@ function update(self)
 
     render.draw(self.tile_pred)
 	render.draw(self.particle_pred)
-    --render.draw(self.model_pred)
     render.draw_debug3d()
 
     render.set_view(vmath.matrix4())
@@ -74,7 +97,6 @@ function update(self)
     render.draw(self.text_pred)
     render.disable_state(render.STATE_STENCIL_TEST)
 
-    --render.set_depth_mask(false)
     render.draw_debug2d()
 end
 
@@ -84,21 +106,6 @@ function on_message(self, message_id, message)
     elseif message_id == hash("set_view_projection") then
         self.view = message.view
 	elseif message_id == hash("window_resized") then
-		update_window()
+		update_window(self)
     end
-end
-
-function update_window()
-	window_width = render.get_window_width()
-	window_height = render.get_window_height()
-	winman.halfx, winman.halfy = window_width / 2, window_height / 2
-
-	local zoom_factor = math.min(window_width / original_width, window_height / original_height)
-	winman.scale = zoom_factor
-
-	final_width = original_width * zoom_factor
-	final_height = original_height * zoom_factor
-	xoffset = -(final_width - window_width) / 2
-	yoffset = -(final_height - window_height) / 2
-	winman.barOffset.x, winman.barOffset.y = xoffset, yoffset
 end

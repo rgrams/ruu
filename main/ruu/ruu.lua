@@ -4,7 +4,7 @@
 local M = {}
 
 local theme = require "main.ruu.ruu theme"
-
+local winman = require "main.framework.window_manager"
 
 -- ---------------------------------------------------------------------------------
 --| 							CONFIG: DEFAULT VALUES								|
@@ -511,7 +511,7 @@ end
 function M.on_input(key, action_id, action)
 	key = key[M.keyName]
 	if not action_id then -- Mouse movement
-		M.update_mouse(key, action.x, action.y, action.dx, action.dy)
+		M.update_mouse(key, action.x, action.y, action.screen_dx, action.screen_dy)
 		-- if you wish to tell if the mouse is over a button in your gui script you can call M.update_mouse directly and get the return value.
 	elseif action_id == M.INPUT_CLICK then -- Mouse click
 		if M.mode == M.MODE_MOBILE then M.update_mouse(key, action.x, action.y, action.dx, action.dy) end

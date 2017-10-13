@@ -8,11 +8,15 @@ M.halfy = 275
 
 M.scale = 1 -- view scale factor from render script
 M.barOffset = vmath.vector3() -- x, y size of black bars outside viewport
+M.guiScale = 1
 
-M.playerPos = vmath.vector3()
 
 function M.mouse_to_world(mx, my) -- Uses screen_x, screen_y
-	return (mx - M.halfx)/M.scale, (my - M.halfy)/M.scale
+    return (mx - M.halfx)/M.scale, (my - M.halfy)/M.scale
+end
+
+function M.delta_screen_to_gui(mx, my)
+	return mx * M.guiScale, my * M.guiScale
 end
 
 return M
