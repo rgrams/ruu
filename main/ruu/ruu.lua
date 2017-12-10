@@ -692,12 +692,14 @@ function M.map_neighbors(key, map)
 	]]
 end
 
+-- Sets the widget's stencilNode and gives it a .scrollArea reference so it can tell the scrollArea to scroll to it when it gains focus
 function M.add_to_scrollArea(key, scrollArea, ...)
 	key = key[M.keyName]
 	scrollArea = wgts[key].all[scrollArea]
 	for i, v in ipairs({...}) do
 		v = wgts[key].all[v]
 		v.scrollArea = scrollArea
+		v.stencilNode = scrollArea.node
 	end
 end
 
