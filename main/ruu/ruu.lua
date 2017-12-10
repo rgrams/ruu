@@ -932,11 +932,9 @@ function M.group_swap(key, from, to)
 	M.group_enable(key, to)
 end
 
-function M.new_group(key, name, rootnode, children, autoset_wgts_vert, autoset_wgts_horiz, disable)
+function M.new_group(key, name, rootnode, children, neighbor_map, disable)
 	key = key[M.keyName]
 	verify_key(key, "new_group")
-	autoset_wgts_vert = autoset_wgts_vert or false
-	autoset_wgts_horiz = autoset_wgts_horiz or false
 	disable = disable or false
 	local group = {
 		name = name,
@@ -946,16 +944,8 @@ function M.new_group(key, name, rootnode, children, autoset_wgts_vert, autoset_w
 	}
 	if disable then gui.set_enabled(group.node, false) end
 	wgts[key].groups[name] = group
-	local childMap = {}
-	if autoset_wgts_vert then
-		for i, v in ipairs(children) do table.insert(childMap, { v }) end
-		M.map_neighbors(key, childMap)
-	elseif autoset_wgts_horiz then
-		local xlist = {}
-		table.insert(childMap, xlist)
-		for i, v in ipairs(children) do table.insert(xlist, v) end
-		M.map_neighbors(key, childMap)
-	end
+
+	if neighbor_map then M.map_neighbors(key, neighbor_map) end
 end
 
 
