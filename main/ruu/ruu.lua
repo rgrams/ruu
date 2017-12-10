@@ -4,7 +4,6 @@
 local M = {}
 
 local theme = require "main.ruu.ruu theme"
-local winman = require "main.framework.window_manager"
 
 -- ---------------------------------------------------------------------------------
 --| 							CONFIG: DEFAULT VALUES								|
@@ -42,7 +41,7 @@ theme.mode = M.mode
 
 
 local sysInfo = sys.get_sys_info()
-if sysInfo.system_name == "Android" or sysInfo.system_name == "iPhone OS" then print("mobile build") M.mode = M.MODE_MOBILE end
+if sysInfo.system_name == "Android" or sysInfo.system_name == "iPhone OS" then M.mode = M.MODE_MOBILE end
 
 
 M.layerPrecision = 1000 -- layer index multiplied by this in get_drawIndex() calculation
@@ -124,7 +123,7 @@ local function clamp(x, max, min) -- much more legible than math.min(math.max(x,
 	return x > max and max or (x < min and min or x)
 end
 
-local pivots = {
+local PIVOTS = {
 	 [gui.PIVOT_CENTER] = vmath.vector3(0, 0, 0),
 	 [gui.PIVOT_N] = vmath.vector3(0, 1, 0),
 	 [gui.PIVOT_NE] = vmath.vector3(1, 1, 0),
@@ -137,7 +136,7 @@ local pivots = {
  }
 
 local function get_center_position(node) -- pivot-independent get_position for scroll areas
-	local pivotVec = pivots[gui.get_pivot(node)]
+	local pivotVec = PIVOTS[gui.get_pivot(node)]
 	local size = gui.get_size(node)
 	pivotVec.x = pivotVec.x * size.x * 0.5;  pivotVec.y = pivotVec.y * size.y * 0.5
 	return gui.get_position(node) - pivotVec
@@ -155,7 +154,9 @@ local function get_drawIndex(widget) -- combines layer and index to get an absol
 	local layer = gui.get_layer(widget.node)
 	local index = gui.get_index(widget.node)
 	local li = wgts[widget.key].layers[layer]
-	if not li then print("WARNING: ruu.get_drawIndex() - layer not found in list. May not accurately get top widget unless you call ruu.register_layers") end
+	if not li then
+		print("WARNING: ruu.get_drawIndex() - layer not found in list. May not accurately get top widget unless you call ruu.register_layers")
+	end
 	return (li and (li * M.layerPrecision) or 0) + index
 end
 
@@ -298,10 +299,10 @@ local dot45 = math.sqrt(2)/2
 local function slider_focus_neighbor(self, action_id)
 	local dirKey = M.INPUT_DIRKEY[action_id]
 	local dirDot = vmath.dot(neighbor_dirs[dirKey], self.angleVec)
-	if math.abs(dirDot) >= dot45 then
+	if math.abs(dirDot) >= dot45 then -- If directional input is within 45 degrees of slider direction then drag the slider
 		local dotSign = sign(dirDot)
 		self:drag(self.angleVec.x * self.nudgeDist * dotSign, self.angleVec.y * self.nudgeDist * dotSign)
-	else
+	else -- Otherwise, the input is closer to perpendicular, focus the neighbor in that direction (if any)
 		local neighbor = self[dirKey]
 		if neighbor then
 			self:unfocus()
@@ -446,6 +447,7 @@ end
 local function inputField_setText(self, text)
 	self.text = text
 	gui.set_text(self.textNode, self.text)
+	-- A bit of rigmarole to get cursor position because `gui.get_text_metrics` ignores trailing whitespace
 	self.cursorPos.x = gui.get_text_metrics(self.font, self.text .. self.endTag).width + self.textOriginPos.x - self.endTagLength
 
 	if self.cursorPos.x > self.halfInsideWidth then -- cursor is out of view, scroll it to the left
