@@ -3,7 +3,7 @@
 
 local M = {}
 
-local theme = require "main.ruu.ruu theme"
+local theme = require "ruu.ruu theme"
 
 -- ---------------------------------------------------------------------------------
 --| 							CONFIG: DEFAULT VALUES								|

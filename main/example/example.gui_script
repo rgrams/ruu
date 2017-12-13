@@ -1,6 +1,6 @@
 
-local ruu = require "main.ruu.ruu"
-local ruuCompWgts = require "main.ruu.ruu compound widgets"
+local ruu = require "ruu.ruu"
+local ruuCompWgts = require "ruu.ruu compound widgets"
 local winman = require "main.framework.window_manager"
 
 
