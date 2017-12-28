@@ -1,11 +1,11 @@
 script: ""
 fonts {
   name: "test font"
-  font: "/main/example/fonts/test font.font"
+  font: "/ruu/widget templates/assets/default.font"
 }
 textures {
-  name: "common"
-  texture: "/main/common/common.atlas"
+  name: "ruu_default"
+  texture: "/ruu/widget templates/assets/ruu_default.atlas"
 }
 background_color {
   x: 0.0
@@ -46,7 +46,7 @@ nodes {
   }
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
-  texture: ""
+  texture: "ruu_default/TEX_Square_64"
   id: "body"
   xanchor: XANCHOR_NONE
   yanchor: YANCHOR_NONE
@@ -100,7 +100,7 @@ nodes {
   }
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
-  texture: ""
+  texture: "ruu_default/TEX_Square_64"
   id: "inside"
   xanchor: XANCHOR_NONE
   yanchor: YANCHOR_NONE
@@ -258,7 +258,7 @@ nodes {
   }
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
-  texture: ""
+  texture: "ruu_default/TEX_Square_64"
   id: "toggleButton_in_scrollBox/body"
   xanchor: XANCHOR_NONE
   yanchor: YANCHOR_NONE
@@ -376,7 +376,7 @@ nodes {
   }
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
-  texture: ""
+  texture: "ruu_default/TEX_Square_64"
   id: "toggleButton_in_scrollBox/check"
   xanchor: XANCHOR_LEFT
   yanchor: YANCHOR_NONE
@@ -431,7 +431,7 @@ nodes {
   }
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
-  texture: "common/Square_border_64"
+  texture: "ruu_default/Square_border_64"
   id: "toggleButton_in_scrollBox/focus indicator"
   xanchor: XANCHOR_NONE
   yanchor: YANCHOR_NONE
@@ -486,7 +486,7 @@ nodes {
   }
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
-  texture: "common/Square_border_64"
+  texture: "ruu_default/Square_border_64"
   id: "focus indicator"
   xanchor: XANCHOR_NONE
   yanchor: YANCHOR_NONE

@@ -1,0 +1,9 @@
+images {
+  image: "/ruu/widget templates/assets/Square_border_64.png"
+}
+images {
+  image: "/ruu/widget templates/assets/TEX_Square_64.png"
+}
+margin: 0
+extrude_borders: 2
+inner_padding: 0

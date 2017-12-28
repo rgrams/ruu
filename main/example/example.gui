@@ -1,7 +1,7 @@
 script: "/main/example/example.gui_script"
 fonts {
   name: "test font"
-  font: "/main/example/fonts/test font.font"
+  font: "/ruu/widget templates/assets/default.font"
 }
 background_color {
   x: 0.0
@@ -136,7 +136,7 @@ nodes {
   }
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
-  texture: ""
+  texture: "ruu_default/TEX_Square_64"
   id: "button1/body"
   xanchor: XANCHOR_NONE
   yanchor: YANCHOR_NONE
@@ -255,7 +255,7 @@ nodes {
   }
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
-  texture: "common/Square_border_64"
+  texture: "ruu_default/Square_border_64"
   id: "button1/focus indicator"
   xanchor: XANCHOR_NONE
   yanchor: YANCHOR_NONE
@@ -350,7 +350,7 @@ nodes {
   }
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
-  texture: ""
+  texture: "ruu_default/TEX_Square_64"
   id: "button2/body"
   xanchor: XANCHOR_NONE
   yanchor: YANCHOR_NONE
@@ -469,7 +469,7 @@ nodes {
   }
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
-  texture: "common/Square_border_64"
+  texture: "ruu_default/Square_border_64"
   id: "button2/focus indicator"
   xanchor: XANCHOR_NONE
   yanchor: YANCHOR_NONE
@@ -564,7 +564,7 @@ nodes {
   }
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
-  texture: ""
+  texture: "ruu_default/TEX_Square_64"
   id: "toggleButton1/body"
   xanchor: XANCHOR_NONE
   yanchor: YANCHOR_NONE
@@ -683,7 +683,7 @@ nodes {
   }
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
-  texture: ""
+  texture: "ruu_default/TEX_Square_64"
   id: "toggleButton1/check"
   xanchor: XANCHOR_LEFT
   yanchor: YANCHOR_NONE
@@ -738,7 +738,7 @@ nodes {
   }
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
-  texture: "common/Square_border_64"
+  texture: "ruu_default/Square_border_64"
   id: "toggleButton1/focus indicator"
   xanchor: XANCHOR_NONE
   yanchor: YANCHOR_NONE
@@ -833,7 +833,7 @@ nodes {
   }
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
-  texture: ""
+  texture: "ruu_default/TEX_Square_64"
   id: "toggleButton2/body"
   xanchor: XANCHOR_NONE
   yanchor: YANCHOR_NONE
@@ -952,7 +952,7 @@ nodes {
   }
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
-  texture: ""
+  texture: "ruu_default/TEX_Square_64"
   id: "toggleButton2/check"
   xanchor: XANCHOR_LEFT
   yanchor: YANCHOR_NONE
@@ -1007,7 +1007,7 @@ nodes {
   }
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
-  texture: "common/Square_border_64"
+  texture: "ruu_default/Square_border_64"
   id: "toggleButton2/focus indicator"
   xanchor: XANCHOR_NONE
   yanchor: YANCHOR_NONE
@@ -1102,7 +1102,7 @@ nodes {
   }
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
-  texture: ""
+  texture: "ruu_default/TEX_Square_64"
   id: "toggleButton3/body"
   xanchor: XANCHOR_NONE
   yanchor: YANCHOR_NONE
@@ -1221,7 +1221,7 @@ nodes {
   }
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
-  texture: ""
+  texture: "ruu_default/TEX_Square_64"
   id: "toggleButton3/check"
   xanchor: XANCHOR_LEFT
   yanchor: YANCHOR_NONE
@@ -1276,7 +1276,7 @@ nodes {
   }
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
-  texture: "common/Square_border_64"
+  texture: "ruu_default/Square_border_64"
   id: "toggleButton3/focus indicator"
   xanchor: XANCHOR_NONE
   yanchor: YANCHOR_NONE
@@ -1371,7 +1371,7 @@ nodes {
   }
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
-  texture: ""
+  texture: "ruu_default/TEX_Square_64"
   id: "radBtn1/body"
   xanchor: XANCHOR_NONE
   yanchor: YANCHOR_NONE
@@ -1489,7 +1489,7 @@ nodes {
   }
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
-  texture: ""
+  texture: "ruu_default/TEX_Square_64"
   id: "radBtn1/check"
   xanchor: XANCHOR_LEFT
   yanchor: YANCHOR_NONE
@@ -1544,7 +1544,7 @@ nodes {
   }
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
-  texture: "common/Square_border_64"
+  texture: "ruu_default/Square_border_64"
   id: "radBtn1/focus indicator"
   xanchor: XANCHOR_NONE
   yanchor: YANCHOR_NONE
@@ -1639,7 +1639,7 @@ nodes {
   }
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
-  texture: ""
+  texture: "ruu_default/TEX_Square_64"
   id: "radBtn2/body"
   xanchor: XANCHOR_NONE
   yanchor: YANCHOR_NONE
@@ -1757,7 +1757,7 @@ nodes {
   }
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
-  texture: ""
+  texture: "ruu_default/TEX_Square_64"
   id: "radBtn2/check"
   xanchor: XANCHOR_LEFT
   yanchor: YANCHOR_NONE
@@ -1812,7 +1812,7 @@ nodes {
   }
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
-  texture: "common/Square_border_64"
+  texture: "ruu_default/Square_border_64"
   id: "radBtn2/focus indicator"
   xanchor: XANCHOR_NONE
   yanchor: YANCHOR_NONE
@@ -1907,7 +1907,7 @@ nodes {
   }
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
-  texture: ""
+  texture: "ruu_default/TEX_Square_64"
   id: "radBtn3/body"
   xanchor: XANCHOR_NONE
   yanchor: YANCHOR_NONE
@@ -2025,7 +2025,7 @@ nodes {
   }
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
-  texture: ""
+  texture: "ruu_default/TEX_Square_64"
   id: "radBtn3/check"
   xanchor: XANCHOR_LEFT
   yanchor: YANCHOR_NONE
@@ -2080,7 +2080,7 @@ nodes {
   }
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
-  texture: "common/Square_border_64"
+  texture: "ruu_default/Square_border_64"
   id: "radBtn3/focus indicator"
   xanchor: XANCHOR_NONE
   yanchor: YANCHOR_NONE
@@ -2175,7 +2175,7 @@ nodes {
   }
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
-  texture: ""
+  texture: "ruu_default/TEX_Square_64"
   id: "radBtn4/body"
   xanchor: XANCHOR_NONE
   yanchor: YANCHOR_NONE
@@ -2293,7 +2293,7 @@ nodes {
   }
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
-  texture: ""
+  texture: "ruu_default/TEX_Square_64"
   id: "radBtn4/check"
   xanchor: XANCHOR_LEFT
   yanchor: YANCHOR_NONE
@@ -2348,7 +2348,7 @@ nodes {
   }
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
-  texture: "common/Square_border_64"
+  texture: "ruu_default/Square_border_64"
   id: "radBtn4/focus indicator"
   xanchor: XANCHOR_NONE
   yanchor: YANCHOR_NONE
@@ -2443,7 +2443,7 @@ nodes {
   }
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
-  texture: ""
+  texture: "ruu_default/TEX_Square_64"
   id: "radBtn5/body"
   xanchor: XANCHOR_NONE
   yanchor: YANCHOR_NONE
@@ -2561,7 +2561,7 @@ nodes {
   }
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
-  texture: ""
+  texture: "ruu_default/TEX_Square_64"
   id: "radBtn5/check"
   xanchor: XANCHOR_LEFT
   yanchor: YANCHOR_NONE
@@ -2616,7 +2616,7 @@ nodes {
   }
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
-  texture: "common/Square_border_64"
+  texture: "ruu_default/Square_border_64"
   id: "radBtn5/focus indicator"
   xanchor: XANCHOR_NONE
   yanchor: YANCHOR_NONE
@@ -2711,7 +2711,7 @@ nodes {
   }
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
-  texture: ""
+  texture: "ruu_default/TEX_Square_64"
   id: "slider1/root"
   xanchor: XANCHOR_NONE
   yanchor: YANCHOR_NONE
@@ -2766,7 +2766,7 @@ nodes {
   }
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
-  texture: ""
+  texture: "ruu_default/TEX_Square_64"
   id: "slider1/endpoint"
   xanchor: XANCHOR_NONE
   yanchor: YANCHOR_NONE
@@ -2821,7 +2821,7 @@ nodes {
   }
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
-  texture: ""
+  texture: "ruu_default/TEX_Square_64"
   id: "slider1/body"
   xanchor: XANCHOR_NONE
   yanchor: YANCHOR_NONE
@@ -2876,7 +2876,7 @@ nodes {
   }
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
-  texture: "common/Square_border_64"
+  texture: "ruu_default/Square_border_64"
   id: "slider1/focus indicator"
   xanchor: XANCHOR_NONE
   yanchor: YANCHOR_NONE
@@ -2971,7 +2971,7 @@ nodes {
   }
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
-  texture: ""
+  texture: "ruu_default/TEX_Square_64"
   id: "scrollbar1/root"
   xanchor: XANCHOR_NONE
   yanchor: YANCHOR_NONE
@@ -3026,7 +3026,7 @@ nodes {
   }
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
-  texture: ""
+  texture: "ruu_default/TEX_Square_64"
   id: "scrollbar1/endpoint"
   xanchor: XANCHOR_NONE
   yanchor: YANCHOR_NONE
@@ -3081,7 +3081,7 @@ nodes {
   }
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
-  texture: ""
+  texture: "ruu_default/TEX_Square_64"
   id: "scrollbar1/body"
   xanchor: XANCHOR_NONE
   yanchor: YANCHOR_NONE
@@ -3136,7 +3136,7 @@ nodes {
   }
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
-  texture: "common/Square_border_64"
+  texture: "ruu_default/Square_border_64"
   id: "scrollbar1/focus indicator"
   xanchor: XANCHOR_NONE
   yanchor: YANCHOR_NONE
@@ -3402,7 +3402,7 @@ nodes {
   }
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
-  texture: ""
+  texture: "ruu_default/TEX_Square_64"
   id: "scrollbox_scrollbar/root"
   xanchor: XANCHOR_NONE
   yanchor: YANCHOR_NONE
@@ -3457,7 +3457,7 @@ nodes {
   }
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
-  texture: ""
+  texture: "ruu_default/TEX_Square_64"
   id: "scrollbox_scrollbar/endpoint"
   xanchor: XANCHOR_NONE
   yanchor: YANCHOR_NONE
@@ -3512,7 +3512,7 @@ nodes {
   }
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
-  texture: ""
+  texture: "ruu_default/TEX_Square_64"
   id: "scrollbox_scrollbar/body"
   xanchor: XANCHOR_NONE
   yanchor: YANCHOR_NONE
@@ -3567,7 +3567,7 @@ nodes {
   }
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
-  texture: "common/Square_border_64"
+  texture: "ruu_default/Square_border_64"
   id: "scrollbox_scrollbar/focus indicator"
   xanchor: XANCHOR_NONE
   yanchor: YANCHOR_NONE
@@ -3661,7 +3661,7 @@ nodes {
   }
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
-  texture: ""
+  texture: "ruu_default/TEX_Square_64"
   id: "inputField/body"
   xanchor: XANCHOR_NONE
   yanchor: YANCHOR_NONE
@@ -3889,7 +3889,7 @@ nodes {
   }
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
-  texture: "common/Square_border_64"
+  texture: "ruu_default/Square_border_64"
   id: "inputField/focus indicator"
   xanchor: XANCHOR_NONE
   yanchor: YANCHOR_NONE
@@ -3983,7 +3983,7 @@ nodes {
   }
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
-  texture: ""
+  texture: "ruu_default/TEX_Square_64"
   id: "sliderArea/body"
   xanchor: XANCHOR_NONE
   yanchor: YANCHOR_NONE
@@ -4038,7 +4038,7 @@ nodes {
   }
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
-  texture: ""
+  texture: "ruu_default/TEX_Square_64"
   id: "sliderArea/inside"
   xanchor: XANCHOR_NONE
   yanchor: YANCHOR_NONE
@@ -4199,7 +4199,7 @@ nodes {
   }
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
-  texture: ""
+  texture: "ruu_default/TEX_Square_64"
   id: "sliderArea/toggleButton_in_scrollBox/body"
   xanchor: XANCHOR_NONE
   yanchor: YANCHOR_NONE
@@ -4317,7 +4317,7 @@ nodes {
   }
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
-  texture: ""
+  texture: "ruu_default/TEX_Square_64"
   id: "sliderArea/toggleButton_in_scrollBox/check"
   xanchor: XANCHOR_LEFT
   yanchor: YANCHOR_NONE
@@ -4372,7 +4372,7 @@ nodes {
   }
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
-  texture: "common/Square_border_64"
+  texture: "ruu_default/Square_border_64"
   id: "sliderArea/toggleButton_in_scrollBox/focus indicator"
   xanchor: XANCHOR_NONE
   yanchor: YANCHOR_NONE
@@ -4427,7 +4427,7 @@ nodes {
   }
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
-  texture: "common/Square_border_64"
+  texture: "ruu_default/Square_border_64"
   id: "sliderArea/focus indicator"
   xanchor: XANCHOR_NONE
   yanchor: YANCHOR_NONE
