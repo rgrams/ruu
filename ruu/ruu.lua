@@ -4,6 +4,8 @@
 local M = {}
 
 local theme = require "ruu.ruu theme"
+local ruutil = require "ruu.ruutilities"
+
 
 -- ---------------------------------------------------------------------------------
 --| 							CONFIG: DEFAULT VALUES								|
@@ -43,10 +45,6 @@ theme.mode = M.mode
 
 local sysInfo = sys.get_sys_info()
 if sysInfo.system_name == "Android" or sysInfo.system_name == "iPhone OS" then M.mode = M.MODE_MOBILE end
-
-
-M.layerPrecision = 1000 -- layer index multiplied by this in get_drawIndex() calculation
--- M.layerPrecision = number of different nodes allowed in each layer
 
 
 -- ---------------------------------------------------------------------------------
@@ -90,89 +88,6 @@ local function verify_key(key, ctxString)
 	end
 end
 
--- ---------------------------------------------------------------------------------
---| 					  PRIVATE FUNCTIONS 2: UTILITIES							|
--- ---------------------------------------------------------------------------------
-
-local function nextval(t, i) -- looping, used for setting up button list neighbors
-	if #t == 0 then return false end
-	i = (i + 1) <= #t and (i + 1) or 1
-	return t[i]
-end
-
-local function prevval(t, i) -- looping, used for setting up button list neighbors
-	if #t == 0 then return false end
-	i = (i - 1) >= 1 and (i - 1) or #t
-	return t[i]
-end
-
-local function nexti(t, i) -- Next index in array (looping)
-	if #t == 0 then return 0 end
-	return (i + 1) <= #t and (i + 1) or 1
-end
-
-local function previ(t, i) -- Previous index in array (looping)
-	if #t == 0 then return 0 end
-	return (i - 1) >= 1 and (i - 1) or #t
-end
-
-local function sign(x)
-	return x >= 0 and 1 or -1
-end
-
-local function clamp(x, max, min) -- much more legible than math.min(math.max(x, min), max)
-	return x > max and max or (x < min and min or x)
-end
-
-local PIVOTS = {
-	 [gui.PIVOT_CENTER] = vmath.vector3(0, 0, 0),
-	 [gui.PIVOT_N] = vmath.vector3(0, 1, 0),
-	 [gui.PIVOT_NE] = vmath.vector3(1, 1, 0),
-	 [gui.PIVOT_E] = vmath.vector3(1, 0, 0),
-	 [gui.PIVOT_SE] = vmath.vector3(1, -1, 0),
-	 [gui.PIVOT_S] = vmath.vector3(0, -1, 0),
-	 [gui.PIVOT_SW] = vmath.vector3(-1, -1, 0),
-	 [gui.PIVOT_W] = vmath.vector3(-1, 0, 0),
-	 [gui.PIVOT_NW] = vmath.vector3(-1, 1, 0)
- }
-
-local function get_center_position(node) -- pivot-independent get_position for scroll areas
-	local pivotVec = PIVOTS[gui.get_pivot(node)]
-	local size = gui.get_size(node)
-	pivotVec.x = pivotVec.x * size.x * 0.5;  pivotVec.y = pivotVec.y * size.y * 0.5
-	return gui.get_position(node) - pivotVec
-end
-
-local function safe_get_node(id)
-	if pcall(gui.get_node, id) then
-		return gui.get_node(id)
-	else
-		return nil
-	end
-end
-
-local function get_drawIndex(widget) -- combines layer and index to get an absolute draw index
-	local layer = gui.get_layer(widget.node)
-	local index = gui.get_index(widget.node)
-	local li = wgts[widget.key].layers[layer]
-	if not li then
-		print("WARNING: ruu.get_drawIndex() - layer not found in list. May not accurately get top widget unless you call ruu.register_layers")
-	end
-	return (li and (li * M.layerPrecision) or 0) + index
-end
-
-local function get_topWidget(key, wgtList) -- find widget with highest drawIndex
-	local maxI = -1
-	local maxWgt = nil
-	for i, v in ipairs(wgtList) do
-		local drawI = get_drawIndex(v)
-		if drawI > maxI then
-			maxI = drawI
-			maxWgt = v
-		end
-	end
-	return maxWgt
-end
 
 -- ---------------------------------------------------------------------------------
 --|					  PRIVATE FUNCTIONS 3: WIDGET BEHAVIOR							|
@@ -301,7 +216,7 @@ local function slider_focus_neighbor(self, action_id)
 	local dirKey = M.INPUT_DIRKEY[action_id]
 	local dirDot = vmath.dot(neighbor_dirs[dirKey], self.angleVec)
 	if math.abs(dirDot) >= dot45 then -- If directional input is within 45 degrees of slider direction then drag the slider
-		local dotSign = sign(dirDot)
+		local dotSign = ruutil.sign(dirDot)
 		self:drag(self.angleVec.x * self.nudgeDist * dotSign, self.angleVec.y * self.nudgeDist * dotSign)
 	else -- Otherwise, the input is closer to perpendicular, focus the neighbor in that direction (if any)
 		local neighbor = self[dirKey]
@@ -317,7 +232,7 @@ local function drag_slider(self, dx, dy)
 	local axis = self.axis or "x"
 	self.dragVec.x = dx;  self.dragVec.y = dy
 	local dragDist = vmath.dot(self.dragVec, self.angleVec)
-	self.pos[axis] = clamp(self.pos[axis] + dragDist, self.endx, self.startx)
+	self.pos[axis] = ruutil.clamp(self.pos[axis] + dragDist, self.endx, self.startx)
 	self.fraction = self.slideLength == 0 and 0 or (self.pos[axis] - self.startx)/self.slideLength -- have to avoid dividing by zero
 	gui.set_position(self.slideNode, self.pos)
 
@@ -326,7 +241,7 @@ end
 
 local function slider_setHandleLength(self, newLength)
 	local axis = self.axis or "x"
-	self.handleLength = clamp(newLength, self.baseLength, 0)
+	self.handleLength = ruutil.clamp(newLength, self.baseLength, 0)
 	self.slideLength = self.baseLength - self.handleLength
 	self.startx = self.handleLength/2
 	self.endx = self.startx + self.slideLength
@@ -346,7 +261,7 @@ end
 local function drag_scrollArea(self, dx, dy)
 	self.dragVec.x = dx;  self.dragVec.y = dy
 	local dragDist = vmath.dot(self.dragVec, self.angleVec)
-	self.pos.y = clamp(self.pos.y + dragDist, self.endx, self.startx)
+	self.pos.y = ruutil.clamp(self.pos.y + dragDist, self.endx, self.startx)
 	self.fraction = self.slideLength == 0 and 0 or (self.pos.y - self.startx)/self.slideLength -- have to avoid dividing by zero
 	gui.set_position(self.slideNode, self.pos)
 
@@ -354,7 +269,7 @@ local function drag_scrollArea(self, dx, dy)
 end
 
 local function scrollArea_scroll_to_child(self, child)
-	local center = get_center_position(child.node) -- will be relative to scrollArea inside . . . always the same
+	local center = ruutil.get_center_position(child.node) -- will be relative to scrollArea inside . . . always the same
 
 	local rot = math.rad(gui.get_rotation(child.node).z) -- relative to parent (scrollArea inside)
 	local qRot = vmath.quat_rotation_z(rot)
@@ -522,7 +437,7 @@ function M.on_input(key, action_id, action)
 			for i, v in ipairs(wgts[key].hovered) do v:press() end -- press all hovered nodes
 
 			-- give keyboard focus to top hovered widget
-			local topWgt = get_topWidget(key, wgts[key].hovered)
+			local topWgt = ruutil.get_top_widget(wgts[key].hovered, "node", wgts[key].layers)
 			if topWgt and topWgt ~= wgts[key].cur_focus then
 				if wgts[key].cur_focus then wgts[key].cur_focus:unfocus() end
 				wgts[key].cur_focus = topWgt
@@ -629,17 +544,17 @@ local function map_get_next(wgt, map, iy, ix, dirx, diry) -- local function for 
 	local found = nil
 	while not found do
 		if diry == 1 then
-			found = prevval(map, iy)[ix]
-			iy = previ(map, iy)
+			found = ruutil.prevval(map, iy)[ix]
+			iy = ruutil.previ(map, iy)
 		elseif diry == -1 then
-			found = nextval(map, iy)[ix]
-			iy = nexti(map, iy)
+			found = ruutil.nextval(map, iy)[ix]
+			iy = ruutil.nexti(map, iy)
 		elseif dirx == -1 then
-			found = prevval(map, ix)
-			ix = previ(map, ix)
+			found = ruutil.prevval(map, ix)
+			ix = ruutil.previ(map, ix)
 		elseif dirx == 1 then
-			found = nextval(map, ix)
-			ix = nexti(map, ix)
+			found = ruutil.nextval(map, ix)
+			ix = ruutil.nexti(map, ix)
 		else found = wgt
 		end
 	end
@@ -788,7 +703,7 @@ function M.new_slider(key, name, active, pressfunc, releasefunc, dragfunc, lengt
 	if type(key) == "table" then key = key[M.keyName] end
 	local button = M.new_baseWidget(key, name, active, pressfunc, releasefunc, theme_type)
 	button.rootNode = gui.get_node(name .. "/root") -- only used to get slider rotation
-	button.endpointNode = safe_get_node(name .. "/endpoint") -- optional, only used to get default baseLength
+	button.endpointNode = ruutil.safe_get_node(name .. "/endpoint") -- optional, only used to get default baseLength
 	button.slideNode = button.node
 	local rot = math.rad(gui.get_rotation(button.rootNode).z)
 	button.angleVec = vmath.vector3(math.cos(rot), math.sin(rot), 0)
