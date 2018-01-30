@@ -873,6 +873,7 @@ function M.group_swap(key, from, to)
 end
 
 function M.new_group(key, name, rootnode, children, neighbor_map, disable)
+	keyTable = key -- map_neighbors expects the original table
 	key = key[M.keyName]
 	verify_key(key, "new_group")
 	disable = disable or false
@@ -885,7 +886,7 @@ function M.new_group(key, name, rootnode, children, neighbor_map, disable)
 	if disable then gui.set_enabled(group.node, false) end
 	wgts[key].groups[name] = group
 
-	if neighbor_map then M.map_neighbors(key, neighbor_map) end
+	if neighbor_map then M.map_neighbors(keyTable, neighbor_map) end
 end
 
 
