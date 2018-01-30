@@ -1,6 +1,7 @@
 
 local M = {}
 
+local MODE_KEYBOARD_SIMPLE = 0
 local MODE_KEYBOARD = 1
 local MODE_MOUSE = 2
 local MODE_MOBILE = 3
@@ -49,22 +50,32 @@ function M.init_radioButton(self)
 end
 
 function M.hover_btn(self)
-	gui.set_color(self.node, hovercolor)
+	if M.mode ~= MODE_KEYBOARD_SIMPLE then
+		gui.set_color(self.node, hovercolor)
+	end
 end
 
 function M.unhover_btn(self)
-	gui.set_color(self.node, normalcolor)
+	if M.mode ~= MODE_KEYBOARD_SIMPLE then
+		gui.set_color(self.node, normalcolor)
+	end
 end
 
 function M.focus_btn(self)
 	if M.mode == MODE_KEYBOARD then
 		gui.set_enabled(self.focusIndicator, true)
+	elseif M.mode == MODE_KEYBOARD_SIMPLE then
+		gui.set_enabled(self.focusIndicator, true)
+		gui.set_color(self.node, hovercolor)
 	end
 end
 
 function M.unfocus_btn(self)
 	if M.mode == MODE_KEYBOARD then
 		gui.set_enabled(self.focusIndicator, false)
+	elseif M.mode == MODE_KEYBOARD_SIMPLE then
+		gui.set_enabled(self.focusIndicator, false)
+		gui.set_color(self.node, normalcolor)
 	end
 end
 

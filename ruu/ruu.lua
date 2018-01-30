@@ -29,14 +29,24 @@ M.INPUT_SCROLL_DIST = 25
 M.INPUT_SLIDER_NUDGE_DIST = 5
 
 -- ##########  CONTROL MODE  ##########
--- KEYBOARD: For keyboard only, or keyboard and mouse - Buttons stay hovered until another is hovered. Always hovers a default initial button.
+-- KEYBOARD_SIMPLE: For keyboard only, or keyboard and mouse
+--		- Mouse hover and keyboard focus are combined
+--			- Mostly cosmetic - widgets still get hover() and unhover() callbacks, but theme has an exception
+--		- Widgets will get KB focus when the mouse hovers them
+M.MODE_KEYBOARD_SIMPLE = 0
+
+-- KEYBOARD: For keyboard only, or keyboard and mouse
+--		- Keyboard focus and mouse hover are totally separate.
+--		- Enabled groups should focus a their first widget
 M.MODE_KEYBOARD = 1
 
--- MOUSE: For mouse only, keys still work once the mouse hovers a button (if you give Ruu key input) - buttons hover when mouse enters and unhover when it exits.
+-- MOUSE: For mouse only, keys still work once the mouse hovers a button (if you give Ruu key input)
+--		- Just a cosmetic difference - the default theme doesn't show KB focus stuff when using this mode
+--			- don't send keyboard input if you don't want to use it.
 M.MODE_MOUSE = 2
 
--- MOBILE: For touch - no hover state used, cursor position only checked while a tap is held.
--- Rather, everything is unhovered on touch release.
+-- MOBILE: For touch devices, where you don't get cursor updates unless a touch is held
+--		- Just unhovers widgets on "click" release
 M.MODE_MOBILE = 3
 
 M.mode = M.MODE_KEYBOARD
@@ -413,7 +423,7 @@ function M.update_mouse(key, actionx, actiony, dx, dy) -- should call this from 
 					wgt:hover()
 				end
 			elseif wgt.hovered then
-				-- Not hit, but hovered - find & remove from hovered list, and unhover
+				-- Wgt was not hit, but is hovered - find & remove from hovered list, and unhover
 				for i, v in ipairs(wgts[key].hovered) do
 					if v == wgt then
 						table.remove(wgts[key].hovered, i)
@@ -421,6 +431,14 @@ function M.update_mouse(key, actionx, actiony, dx, dy) -- should call this from 
 					end
 				end
 			end
+		end
+	end
+	if hitAny and M.mode == M.MODE_KEYBOARD_SIMPLE then -- in this mode, always focus the top hovered widget
+		local topWgt = ruutil.get_top_widget(wgts[key].hovered, "node", wgts[key].layers)
+		if wgts[key].cur_focus ~= topWgt then
+			if wgts[key].cur_focus then wgts[key].cur_focus:unfocus() end
+			wgts[key].cur_focus = topWgt
+			topWgt:focus()
 		end
 	end
 	return hitAny -- for checking if input is consumed
@@ -832,10 +850,12 @@ function M.group_enable(key, name)
 	for i, v in ipairs(g.children) do
 		M.activate_btn(key, v)
 	end
-	if M.mode == M.MODE_KEYBOARD then wgts[key].all[g.children[1]]:hover() end
+	if M.mode == M.MODE_KEYBOARD or M.mode == M.MODE_KEYBOARD_SIMPLE then
+		wgts[key].all[g.children[1]]:focus()
+	end
 end
 
--- It's up to the theme hide the node or not.
+-- It's up to the theme to hide the node or not.
 function M.group_disable(key, name)
 	key = key[M.keyName]
 	local g = wgts[key].groups[name]
