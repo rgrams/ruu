@@ -847,9 +847,7 @@ function M.group_enable(key, name)
 	local g = wgts[key].groups[name]
 	gui.set_enabled(g.node, true)
 	theme.group_enable(g)
-	for i, v in ipairs(g.children) do
-		M.activate_btn(key, v)
-	end
+	M.activate_widgets(key, unpack(g.children))
 	if M.mode == M.MODE_KEYBOARD or M.mode == M.MODE_KEYBOARD_SIMPLE then
 		wgts[key].all[g.children[1]]:focus()
 	end
@@ -860,9 +858,7 @@ function M.group_disable(key, name)
 	key = key[M.keyName]
 	local g = wgts[key].groups[name]
 	theme.group_disable(g)
-	for i, v in ipairs(g.children) do
-		M.deactivate_btn(key, v)
-	end
+	M.deactivate_widgets(key, unpack(g.children))
 end
 
 -- Convenience function to disable one group and enable another
