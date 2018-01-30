@@ -10,11 +10,12 @@ local theme = require "ruu.ruu theme"
 -- ---------------------------------------------------------------------------------
 -- ##########  INPUT  ##########
 -- Hashed values are the action names required in your input bindings
-M.INPUT_DIRKEY = {}
-M.INPUT_DIRKEY[hash("up")] = "neighbor_up"
-M.INPUT_DIRKEY[hash("down")] = "neighbor_down"
-M.INPUT_DIRKEY[hash("left")] = "neighbor_left"
-M.INPUT_DIRKEY[hash("right")] = "neighbor_right"
+M.INPUT_DIRKEY = {
+	[hash("up")] = "neighbor_up",
+	[hash("down")] = "neighbor_down",
+	[hash("left")] = "neighbor_left",
+	[hash("right")] = "neighbor_right"
+}
 M.INPUT_CLICK = hash("mouse click")
 M.INPUT_ENTER = hash("enter")
 M.INPUT_SCROLLUP = hash("scroll up")
