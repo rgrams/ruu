@@ -53,7 +53,7 @@ end
 -- local destroyRadioButton
 
 function Ruu.destroy(self, widget)
-	setEnabled(self, widget, false)
+	self.setEnabled(self, widget, false)
 	local name = self.allWidgets[widget]
 	self.allWidgets[widget] = nil
 	self.widgetsByName[name] = nil
@@ -80,7 +80,7 @@ function Ruu.mouseMoved(self, x, y)
 	end
 
 	if foundHit then
-		topWidget = util.getTopWidget(self.hoveredWidgets, "node", self.layerDepths)
+		local topWidget = util.getTopWidget(self.hoveredWidgets, "node", self.layerDepths)
 		if self.topHoveredWgt and self.topHoveredWgt ~= topWidget then
 			self.topHoveredWgt:unhover()
 		end
