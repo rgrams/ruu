@@ -20,6 +20,10 @@ local function checkBoxPressed(self, btn)
 	print("checkBoxPressed", btn.isChecked)
 end
 
+local function radioBtnPressed(self, button, prop)
+	print("radioButtonPressed", prop)
+end
+
 function init(self)
 	self.ruu = Ruu(self, getInput)
 	self.ruu:registerLayers({"", "foreground", "text"})
@@ -32,9 +36,19 @@ function init(self)
 
 	self.ruu:Button("reset button", enableAllButtons)
 
-	self.ruu:ToggleButton("checkbox1", checkBoxPressed, false)
+	self.ruu:ToggleButton("checkbox1", checkBoxPressed, true)
+
+	self.ruu:RadioButton("radio1", radioBtnPressed):args("alpha")
+	self.ruu:RadioButton("radio2", radioBtnPressed, true):args("beta")
+	self.ruu:RadioButton("radio3", radioBtnPressed):args("gamma")
+	self.ruu:RadioButton("radio4", radioBtnPressed):args("delta")
+	self.ruu:RadioButton("radio5", radioBtnPressed):args("epsilon")
+	self.ruu:groupRadioButtons({"radio1", "radio2", "radio3", "radio4", "radio5"})
 end
 
 function on_input(self, action_id, action)
 	self.ruu:input(action_id, action)
+	if action_id == hash("enter") and action.pressed then
+		self.ruu:get("radio4"):setChecked(math.random() > 0.5)
+	end
 end

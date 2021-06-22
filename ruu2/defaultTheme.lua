@@ -57,15 +57,16 @@ function ToggleButton.release(self)
 	gui.set_rotation(self.node, rot)
 end
 
---[[
+function ToggleButton.setChecked(self, isChecked)
+	local rot = vmath.quat_rotation_z(self.isChecked and math.pi/6 or 0)
+	gui.set_rotation(self.node, rot)
+end
+
 --##############################  RADIO-BUTTON  ##############################
 local RadioButton = ToggleButton:extend()
 M.RadioButton = RadioButton
 
-function RadioButton.setChecked(self)
-	self.angle = self.isChecked and math.pi/4 or 0
-end
-
+--[[
 --##############################  SLIDER - BAR  ##############################
 local SliderBar = Button:extend()
 M.SliderBar = SliderBar

@@ -3,8 +3,8 @@ local Button = require "ruu2.widgets.Button"
 local ToggleButton = Button:extend()
 
 function ToggleButton.set(self, ruu, owner, nodeName, releaseFn, isChecked, wgtTheme)
+	self.isChecked = isChecked -- Needs to be set before theme.init.
 	ToggleButton.super.set(self, ruu, owner, nodeName, releaseFn, wgtTheme)
-	self.isChecked = isChecked
 end
 
 function ToggleButton.release(self, dontFire, mx, my, isKeyboard)
@@ -20,6 +20,11 @@ function ToggleButton.release(self, dontFire, mx, my, isKeyboard)
 		end
 	end
 	self.wgtTheme.release(self, dontFire, mx, my)
+end
+
+function ToggleButton.setChecked(self, isChecked)
+	self.isChecked = isChecked
+	self.wgtTheme.setChecked(isChecked)
 end
 
 return ToggleButton
