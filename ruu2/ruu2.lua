@@ -6,7 +6,7 @@ local util = require "ruu2.ruutilities"
 local Ruu = Class:extend()
 
 local widgets = {
-	Button = require("ruu2.base widgets.Button")
+	Button = require("ruu2.widgets.Button")
 }
 
 local CLICK = hash("touch")
