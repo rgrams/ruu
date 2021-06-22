@@ -11,6 +11,9 @@ local widgets = {
 
 local CLICK = hash("touch")
 
+Ruu.layerPrecision = 10000 -- Number of different nodes allowed in each layer.
+-- Layer index multiplied by this in getDrawIndex() calculation.
+
 local function addWidget(self, name, widget)
 	self.allWidgets[widget] = name
 	self.enabledWidgets[widget] = true
@@ -77,7 +80,7 @@ function Ruu.mouseMoved(self, x, y)
 	end
 
 	if foundHit then
-		topWidget = util.getTopWidget(self.hoveredWidgets, "node", self.layers)
+		topWidget = util.getTopWidget(self.hoveredWidgets, "node", self.layerDepths)
 		if self.topHoveredWgt and self.topHoveredWgt ~= topWidget then
 			self.topHoveredWgt:unhover()
 		end
@@ -105,6 +108,17 @@ function Ruu.input(self, action_id, action)
 	end
 end
 
+function Ruu.registerLayers(self, layerList)
+	self.layerDepths = {}
+	for i,layer in ipairs(layerList) do
+		if type(layer) == "string" then  layer = hash(layer)
+		elseif type(layer) ~= "userdata" then
+			error("Ruu.registerLayers() - Invalid layer '" .. tostring(layer) .. "'. Must be a string or a hash.")
+		end
+		self.layerDepths[layer] = i * Ruu.layerPrecision
+	end
+end
+
 function Ruu.set(self, owner, getInput, theme)
 	assert(owner, "Ruu() - 'owner' must be specified.")
 	assert(type(getInput) == "function", "Ruu() - Requires a function for getting current input values.")
@@ -115,7 +129,7 @@ function Ruu.set(self, owner, getInput, theme)
 	self.widgetsByName = {}
 	self.theme = theme or defaultTheme
 	self.mx, self.my = 0, 0
-	self.layers = {}
+	self.layerDepths = {}
 end
 
 return Ruu

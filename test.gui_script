@@ -18,6 +18,7 @@ end
 
 function init(self)
 	self.ruu = Ruu(self, getInput)
+	self.ruu:registerLayers({"", "foreground", "text"})
 	msg.post(".", "acquire_input_focus")
 
 	self.btn1 = self.ruu:Button("button1", buttonPressed):args(1)

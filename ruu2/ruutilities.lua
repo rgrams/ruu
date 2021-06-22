@@ -1,10 +1,6 @@
 
 local M = {}
 
-
-M.layerPrecision = 1000 -- Number of different nodes allowed in each layer.
--- Layer index multiplied by this in getDrawIndex() calculation.
-
 local PIVOTS = {
 	 [gui.PIVOT_CENTER] = vmath.vector3(0, 0, 0),
 	 [gui.PIVOT_N] = vmath.vector3(0, 1, 0),
@@ -32,22 +28,22 @@ function M.safeGetNode(id)
 	end
 end
 
-function M.getDrawIndex(node, layers) -- combines layer and index to get an absolute draw index
+function M.getDrawIndex(node, layerDepths) -- combines layer and index to get an absolute draw index
 	local layer = gui.get_layer(node)
 	local index = gui.get_index(node)
-	local li = layers[layer]
-	if not li then
-		-- print("WARNING: ruutil.getDrawIndex() - layer not found in list. May not accurately get top widget unless you call ruu.registerLayers")
+	local layerDepth = layerDepths[layer]
+	if not layerDepth then
+		print("WARNING: ruutil.getDrawIndex() - layer not found in list. May not accurately get top widget unless you call ruu.registerLayers")
 		return index
 	end
-	return li * M.layerPrecision + index
+	return layerDepth + index
 end
 
-function M.getTopWidget(widgetDict, wgtNodeKey, layers) -- find widget with highest drawIndex
+function M.getTopWidget(widgetDict, wgtNodeKey, layerDepths) -- find widget with highest drawIndex
 	local maxIdx, topWidget = -1, nil
 	for widget,_ in pairs(widgetDict) do
 		local node = widget[wgtNodeKey]
-		local drawIdx = M.getDrawIndex(node, layers)
+		local drawIdx = M.getDrawIndex(node, layerDepths)
 		if drawIdx > maxIdx then
 			maxIdx = drawIdx
 			topWidget = widget
