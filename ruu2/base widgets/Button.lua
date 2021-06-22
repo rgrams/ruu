@@ -20,6 +20,7 @@ end
 
 function Button.args(self, arg1, ...)
 	self.releaseArgs = arg1 ~= nil and {arg1,...} or nil
+	return self -- Allow chaining.
 end
 
 function Button.hitCheck(self, x, y)

@@ -4,15 +4,28 @@ local Ruu = require "ruu2.ruu2"
 local function getInput()
 end
 
-local function btn1Press(self, btn, ...)
-	print("btn 1 pressed", self, btn)
+local function buttonPressed(self, btn, arg1)
+	print("Button pressed", self, btn, arg1)
+	self.ruu:setEnabled(btn, false)
+end
+
+local function enableAllButtons(self)
+	self.ruu:setEnabled(self.ruu:get("button1"), true)
+	self.ruu:setEnabled(self.ruu:get("button2"), true)
+	self.ruu:setEnabled(self.ruu:get("button3"), true)
+	self.ruu:setEnabled(self.ruu:get("button4"), true)
 end
 
 function init(self)
 	self.ruu = Ruu(self, getInput)
 	msg.post(".", "acquire_input_focus")
 
-	local btn = self.ruu:Button("button1", btn1Press):args("my argument", "arg2", 45.2398, "bye")
+	self.btn1 = self.ruu:Button("button1", buttonPressed):args(1)
+	self.btn2 = self.ruu:Button("button2", buttonPressed):args(2)
+	self.btn3 = self.ruu:Button("button3", buttonPressed):args(3)
+	self.btn4 = self.ruu:Button("button4", buttonPressed):args(4)
+
+	self.ruu:Button("reset button", enableAllButtons)
 end
 
 function on_input(self, action_id, action)
