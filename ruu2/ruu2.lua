@@ -6,7 +6,8 @@ local util = require "ruu2.ruutilities"
 local Ruu = Class:extend()
 
 local widgets = {
-	Button = require("ruu2.widgets.Button")
+	Button = require("ruu2.widgets.Button"),
+	ToggleButton = require("ruu2.widgets.ToggleButton")
 }
 
 local CLICK = hash("touch")
@@ -23,6 +24,12 @@ end
 
 function Ruu.Button(self, nodeName, releaseFn, wgtTheme)
 	local btn = widgets.Button(self, self.owner, nodeName, releaseFn, wgtTheme or self.theme.Button)
+	addWidget(self, nodeName, btn)
+	return btn
+end
+
+function Ruu.ToggleButton(self, nodeName, releaseFn, isChecked, wgtTheme)
+	local btn = widgets.ToggleButton(self, self.owner, nodeName, releaseFn, isChecked, wgtTheme or self.theme.ToggleButton)
 	addWidget(self, nodeName, btn)
 	return btn
 end

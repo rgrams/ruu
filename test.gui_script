@@ -16,6 +16,10 @@ local function enableAllButtons(self)
 	self.ruu:setEnabled(self.ruu:get("button4"), true)
 end
 
+local function checkBoxPressed(self, btn)
+	print("checkBoxPressed", btn.isChecked)
+end
+
 function init(self)
 	self.ruu = Ruu(self, getInput)
 	self.ruu:registerLayers({"", "foreground", "text"})
@@ -27,6 +31,8 @@ function init(self)
 	self.btn4 = self.ruu:Button("button4", buttonPressed):args(4)
 
 	self.ruu:Button("reset button", enableAllButtons)
+
+	self.ruu:ToggleButton("checkbox1", checkBoxPressed, false)
 end
 
 function on_input(self, action_id, action)

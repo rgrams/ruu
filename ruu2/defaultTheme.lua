@@ -47,14 +47,17 @@ M.ToggleButton = ToggleButton
 
 function ToggleButton.init(self)
 	ToggleButton.super.init(self)
-	self.angle = self.isChecked and math.pi/4 or 0
+	local rot = vmath.quat_rotation_z(self.isChecked and math.pi/6 or 0)
+	gui.set_rotation(self.node, rot)
 end
 
 function ToggleButton.release(self)
 	ToggleButton.super.release(self)
-	self.angle = self.isChecked and math.pi/4 or 0
+	local rot = vmath.quat_rotation_z(self.isChecked and math.pi/6 or 0)
+	gui.set_rotation(self.node, rot)
 end
 
+--[[
 --##############################  RADIO-BUTTON  ##############################
 local RadioButton = ToggleButton:extend()
 M.RadioButton = RadioButton
@@ -140,5 +143,6 @@ function Panel.focus(self)  end
 function Panel.unfocus(self)  end
 function Panel.press(self)  end
 function Panel.release(self)  end
+--]]
 
 return M
