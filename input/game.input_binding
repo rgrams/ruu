@@ -28,7 +28,7 @@ key_trigger {
 }
 mouse_trigger {
   input: MOUSE_BUTTON_LEFT
-  action: "mouse click"
+  action: "touch"
 }
 mouse_trigger {
   input: MOUSE_WHEEL_UP

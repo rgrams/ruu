@@ -3,7 +3,7 @@ title = Ruu
 version = 0.1
 
 [bootstrap]
-main_collection = /main/main.collectionc
+main_collection = /test.collectionc
 render = /main/render/my.renderc
 
 [input]
@@ -12,8 +12,8 @@ repeat_delay = 0.4
 repeat_interval = 0.04
 
 [display]
-width = 1280
-height = 720
+width = 900
+height = 600
 
 [physics]
 scale = 0.02
