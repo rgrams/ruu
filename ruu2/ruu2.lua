@@ -8,6 +8,7 @@ local Ruu = Class:extend()
 local Button = require("ruu2.widgets.Button")
 local ToggleButton = require("ruu2.widgets.ToggleButton")
 local RadioButton = require("ruu2.widgets.RadioButton")
+local SliderHandle = require("ruu2.widgets.SliderHandle")
 
 local CLICK = hash("touch")
 
@@ -49,6 +50,12 @@ function Ruu.groupRadioButtons(self, widgets)
 	end
 end
 
+function Ruu.Slider(self, nodeName, releaseFn, fraction, length, wgtTheme)
+	local btn = SliderHandle(self, self.owner, nodeName, releaseFn, fraction, length, wgtTheme or self.theme.SliderHandle)
+	addWidget(self, nodeName, btn)
+	return btn
+end
+
 function Ruu.get(self, name)
 	return self.widgetsByName[name]
 end
@@ -60,7 +67,7 @@ function Ruu.setEnabled(self, widget, enabled)
 	if not enabled then
 		if self.hoveredWidgets[widget] then
 			self.hoveredWidgets[widget] = nil
-			self:mouseMoved(self.mx, self.my)
+			self:mouseMoved(self.mx, self.my, 0, 0)
 		end
 		-- if self.objDragCount[widget] then  stopDrag(self, "object", widget)  end
 		-- if self.focusedWidget == widget then
@@ -84,13 +91,49 @@ function Ruu.destroy(self, widget)
 	-- end
 end
 
-function Ruu.mouseMoved(self, x, y)
+function Ruu.startDrag(self, widget, dragType)
+	if widget.drag then
+		-- Keep track of whether or not we're dragging a widget as well as the number of different
+		-- drags (generally only 1), so we can know when there it's no longer being dragged.
+		local dragsOnWgt = (self.dragsOnWgt[widget] or 0) + 1
+		self.dragsOnWgt[widget] = dragsOnWgt
+		local drag = { widget = widget, type = dragType }
+		table.insert(self.drags, drag)
+	end
+end
+
+function Ruu.stopDrag(self, dragType)
+	for i=#self.drags,1,-1 do
+		local drag = self.drags[i]
+		if drag.type == dragType then
+			self.drags[i] = nil
+			local dragsOnWgt = self.dragsOnWgt[drag.widget] - 1
+			dragsOnWgt = dragsOnWgt > 0 and dragsOnWgt or nil
+			self.dragsOnWgt[drag.widget] = dragsOnWgt
+		end
+	end
+end
+
+function Ruu.mouseMoved(self, x, y, dx, dy)
 	self.mx, self.my = x, y
 	local foundHit = false
+
+	if self.drags[1] then
+		foundHit = true
+		for i,drag in ipairs(self.drags) do
+			drag.widget:drag(dx, dy, drag.type)
+		end
+	end
+
 	for widget,_ in pairs(self.enabledWidgets) do
-		local widgetIsHit = widget:hitCheck(x, y)
-		if widgetIsHit and widget.maskNode then
-			widgetIsHit = gui.pick_node(widget.maskNode, x, y)
+		local widgetIsHit
+		if self.dragsOnWgt[widget] then
+			widgetIsHit = true
+		else
+			widgetIsHit = widget:hitCheck(x, y)
+			if widgetIsHit and widget.maskNode then
+				widgetIsHit = gui.pick_node(widget.maskNode, x, y)
+			end
 		end
 		if widgetIsHit then
 			foundHit = true
@@ -102,7 +145,8 @@ function Ruu.mouseMoved(self, x, y)
 	end
 
 	if foundHit then
-		local topWidget = util.getTopWidget(self.hoveredWidgets, "node", self.layerDepths)
+		local widgetDict = not self.drags[1] and self.hoveredWidgets or self.dragsOnWgt
+		local topWidget = util.getTopWidget(widgetDict, "node", self.layerDepths)
 		if self.topHoveredWgt and self.topHoveredWgt ~= topWidget then
 			self.topHoveredWgt:unhover()
 		end
@@ -118,14 +162,21 @@ end
 
 function Ruu.input(self, action_id, action)
 	if not action_id then
-		self:mouseMoved(action.x, action.y)
+		self:mouseMoved(action.x, action.y, action.dx, action.dy)
 	elseif action_id == CLICK then
 		if action.pressed then
-			if self.topHoveredWgt then  self.topHoveredWgt:press()  end
-		elseif action.released then
-			if self.topHoveredWgt and self.topHoveredWgt.isPressed then
-				self.topHoveredWgt:release()
+			if self.topHoveredWgt then
+				self.topHoveredWgt:press(self.mx, self.my)
+				self:startDrag(self.topHoveredWgt)
 			end
+		elseif action.released then
+			local wasDragging = self.drags[1]
+			if wasDragging then  self:stopDrag()  end
+			if self.topHoveredWgt and self.topHoveredWgt.isPressed then
+				self.topHoveredWgt:release(nil, self.mx, self.my)
+			end
+			-- Want to release the dragged node before updating hover.
+			if wasDragging then  self:mouseMoved(self.mx, self.my, 0, 0)  end
 		end
 	end
 end
@@ -152,6 +203,9 @@ function Ruu.set(self, owner, getInput, theme)
 	self.theme = theme or defaultTheme
 	self.mx, self.my = 0, 0
 	self.layerDepths = {}
+	self.drags = {}
+	-- A dictionary of currently dragged widgets, with the number of active drags on each (in case of custom drags).
+	self.dragsOnWgt = {}
 end
 
 return Ruu

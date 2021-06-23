@@ -66,6 +66,30 @@ end
 local RadioButton = ToggleButton:extend()
 M.RadioButton = RadioButton
 
+
+--##############################  SLIDER - HANDLE  ##############################
+local SliderHandle = Button:extend()
+M.SliderHandle = SliderHandle
+
+function SliderHandle.init(self)
+	SliderHandle.super.init(self)
+	SliderHandle.drag(self)
+end
+
+function SliderHandle.drag(self)
+	-- self.angle = self.fraction * math.pi
+end
+
+function SliderHandle.focus(self)
+	self.w, self.h = self.w * 1.2, self.h * 1.2
+	self:_updateInnerSize()
+end
+
+function SliderHandle.unfocus(self)
+	self.w, self.h = self.w / 1.2, self.h / 1.2
+	self:_updateInnerSize()
+end
+
 --[[
 --##############################  SLIDER - BAR  ##############################
 local SliderBar = Button:extend()
@@ -83,29 +107,6 @@ end
 
 function SliderBar.release(self)
 	setValue(self, 0.55)
-end
-
---##############################  SLIDER - HANDLE  ##############################
-local SliderHandle = Button:extend()
-M.SliderHandle = SliderHandle
-
-function SliderHandle.init(self)
-	SliderHandle.super.init(self)
-	SliderHandle.drag(self)
-end
-
-function SliderHandle.drag(self)
-	self.angle = self.fraction * math.pi
-end
-
-function SliderHandle.focus(self)
-	self.w, self.h = self.w * 1.2, self.h * 1.2
-	self:_updateInnerSize()
-end
-
-function SliderHandle.unfocus(self)
-	self.w, self.h = self.w / 1.2, self.h / 1.2
-	self:_updateInnerSize()
 end
 
 --##############################  SCROLL-AREA  ##############################

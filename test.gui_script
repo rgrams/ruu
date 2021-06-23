@@ -20,8 +20,12 @@ local function checkBoxPressed(self, btn)
 	print("checkBoxPressed", btn.isChecked)
 end
 
-local function radioBtnPressed(self, button, prop)
+local function radioBtnPressed(self, btn, prop)
 	print("radioButtonPressed", prop)
+end
+
+local function sliderPressed(self, btn)
+	print("sliderPressed")
 end
 
 function init(self)
@@ -44,6 +48,10 @@ function init(self)
 	self.ruu:RadioButton("radio4", radioBtnPressed):args("delta")
 	self.ruu:RadioButton("radio5", radioBtnPressed):args("epsilon")
 	self.ruu:groupRadioButtons({"radio1", "radio2", "radio3", "radio4", "radio5"})
+
+	self.ruu:Slider("slider", sliderPressed, 0, 200)
+	self.ruu:Slider("slider2", sliderPressed, 0.5, 200)
+	self.ruu:Slider("slider3", sliderPressed, 1, 200-40)
 end
 
 function on_input(self, action_id, action)
