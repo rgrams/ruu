@@ -9,6 +9,18 @@ function RadioButton.set(self, ruu, owner, nodeName, releaseFn, isChecked, wgtTh
 	RadioButton.super.set(self, ruu, owner, nodeName, releaseFn, wgtTheme)
 end
 
+function RadioButton.final(self)
+	if self.siblings then
+		for i,widget in ipairs(self.siblings) do
+			if widget == self then
+				table.remove(self.siblings, i)
+				break
+			end
+		end
+	end
+	self:setChecked(false)
+end
+
 function RadioButton.release(self, dontFire, mx, my, isKeyboard)
 	self.isPressed = false
 	if not dontFire then
@@ -43,7 +55,7 @@ function RadioButton.setChecked(self, isChecked)
 		end
 		self.wgtTheme.setChecked(self, true)
 	elseif self.isChecked and not isChecked then -- Un-check
-		-- It's weird to un-check a radio button. Try setting a sibling checked or do nothing.
+		-- It's weird to un-check a radio button. Try setting the first sibling checked or do nothing.
 		if self.siblings then
 			for i,widget in ipairs(self.siblings) do
 				if widget ~= self then

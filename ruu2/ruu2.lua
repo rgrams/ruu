@@ -79,16 +79,12 @@ function Ruu.setEnabled(self, widget, enabled)
 	end
 end
 
--- local destroyRadioButton
-
 function Ruu.destroy(self, widget)
 	self.setEnabled(self, widget, false)
 	local name = self.allWidgets[widget]
 	self.allWidgets[widget] = nil
 	self.widgetsByName[name] = nil
-	-- if widget.widgetType == "RadioButton" then
-		-- destroyRadioButton(self, widget)
-	-- end
+	if widget.final then  widget:final()  end
 end
 
 function Ruu.startDrag(self, widget, dragType)
