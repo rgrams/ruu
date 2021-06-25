@@ -26,6 +26,14 @@ key_trigger {
   input: KEY_BACKSPACE
   action: "backspace"
 }
+key_trigger {
+  input: KEY_TAB
+  action: "next"
+}
+key_trigger {
+  input: KEY_BACKQUOTE
+  action: "prev"
+}
 mouse_trigger {
   input: MOUSE_BUTTON_LEFT
   action: "touch"

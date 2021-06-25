@@ -13,7 +13,7 @@ function Button.set(self, ruu, owner, nodeName, releaseFn, wgtTheme)
 	self.node = gui.get_node(nodeName .. "/body")
 	self.releaseFn = releaseFn
 	self.isEnabled = true
-	self.neighbors = {}
+	self.neighbor = {}
 	self.wgtTheme = wgtTheme
 	self.wgtTheme.init(self, nodeName)
 end

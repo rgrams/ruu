@@ -3,6 +3,8 @@ local Button = require "ruu2.widgets.Button"
 
 local SliderHandle = Button:extend()
 
+local DEFAULT_NUDGE_DIST = 5
+
 -- Hack to try to get global rotation, check two parents up.
 local function getScreenRotation(node)
 	local p1, p2
@@ -71,16 +73,20 @@ function SliderHandle.drag(self, dx, dy, dragType, isLocal)
 	self.wgtTheme.drag(self, dx, dy)
 end
 
-local dirs = { up = {0, -1}, down = {0, 1}, left = {-1, 0}, right = {1, 0} }
+local dirs = { up = {0, 1}, down = {0, -1}, left = {-1, 0}, right = {1, 0} }
 local COS_45 = math.cos(math.rad(45))
 
 function SliderHandle.getFocusNeighbor(self, dir)
 	local dirVec = dirs[dir]
-	local dx, dy = dirVec[1], dirVec[2]
-	dx, dy = toLocal(self.barNode, dx, dy)
-	if math.abs(dx) > COS_45 then -- Input direction is roughly aligned with slider rotation.
-		self:drag(dx * self.nudgeDist, 0, nil, true)
-		return 1 -- Consume input.
+	if dirVec then
+		local dx, dy = dirVec[1], dirVec[2]
+		dx, dy = toLocal(self.barNode, dx, dy)
+		if math.abs(dx) > COS_45 then -- Input direction is roughly aligned with slider rotation.
+			self:drag(dx * (self.nudgeDist or DEFAULT_NUDGE_DIST), 0, nil, true)
+			return 1 -- Consume input.
+		else
+			return self.neighbor[dir]
+		end
 	else
 		return self.neighbor[dir]
 	end

@@ -13,8 +13,10 @@ local function setValue(self, val)
 	gui.set_color(self.node, col)
 end
 
-function Button.init(self)
+function Button.init(self, nodeName)
 	setValue(self, 0.4)
+	self.focusNode = gui.get_node(nodeName .. "/focus")
+	gui.set_enabled(self.focusNode, false)
 end
 
 function Button.hover(self)
@@ -26,11 +28,11 @@ function Button.unhover(self)
 end
 
 function Button.focus(self)
-	self.sy = 1.2
+	gui.set_enabled(self.focusNode, true)
 end
 
 function Button.unfocus(self)
-	self.sy = 1
+	gui.set_enabled(self.focusNode, false)
 end
 
 function Button.press(self)
@@ -45,8 +47,8 @@ end
 local ToggleButton = Button:extend()
 M.ToggleButton = ToggleButton
 
-function ToggleButton.init(self)
-	ToggleButton.super.init(self)
+function ToggleButton.init(self, nodeName)
+	ToggleButton.super.init(self, nodeName)
 	local rot = vmath.quat_rotation_z(self.isChecked and math.pi/6 or 0)
 	gui.set_rotation(self.node, rot)
 end
@@ -71,23 +73,13 @@ M.RadioButton = RadioButton
 local SliderHandle = Button:extend()
 M.SliderHandle = SliderHandle
 
-function SliderHandle.init(self)
-	SliderHandle.super.init(self)
+function SliderHandle.init(self, nodeName)
+	SliderHandle.super.init(self, nodeName)
 	SliderHandle.drag(self)
 end
 
 function SliderHandle.drag(self)
 	-- self.angle = self.fraction * math.pi
-end
-
-function SliderHandle.focus(self)
-	self.w, self.h = self.w * 1.2, self.h * 1.2
-	self:_updateInnerSize()
-end
-
-function SliderHandle.unfocus(self)
-	self.w, self.h = self.w / 1.2, self.h / 1.2
-	self:_updateInnerSize()
 end
 
 --[[

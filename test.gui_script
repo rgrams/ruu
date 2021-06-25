@@ -40,23 +40,24 @@ function init(self)
 
 	self.ruu:Button("reset button", enableAllButtons)
 
-	self.ruu:ToggleButton("checkbox1", checkBoxPressed, true)
+	local checkbox = self.ruu:ToggleButton("checkbox1", checkBoxPressed, true)
 
-	self.ruu:RadioButton("radio1", radioBtnPressed):args("alpha")
-	self.ruu:RadioButton("radio2", radioBtnPressed, true):args("beta")
-	self.ruu:RadioButton("radio3", radioBtnPressed):args("gamma")
-	self.ruu:RadioButton("radio4", radioBtnPressed):args("delta")
-	self.ruu:RadioButton("radio5", radioBtnPressed):args("epsilon")
+	local r1 = self.ruu:RadioButton("radio1", radioBtnPressed):args("alpha")
+	local r2 = self.ruu:RadioButton("radio2", radioBtnPressed, true):args("beta")
+	local r3 = self.ruu:RadioButton("radio3", radioBtnPressed):args("gamma")
+	local r4 = self.ruu:RadioButton("radio4", radioBtnPressed):args("delta")
+	local r5 = self.ruu:RadioButton("radio5", radioBtnPressed):args("epsilon")
 	self.ruu:groupRadioButtons({"radio1", "radio2", "radio3", "radio4", "radio5"})
 
-	self.ruu:Slider("slider", sliderPressed, 0, 200)
-	self.ruu:Slider("slider2", sliderPressed, 0.5, 200)
-	self.ruu:Slider("slider3", sliderPressed, 1, 200-40)
+	self.ruu:mapNeighbors({ {r1}, {r2}, {r3, checkbox}, {r4}, {r5} })
+
+	local slider1 = self.ruu:Slider("slider", sliderPressed, 0, 200)
+	local slider2 = self.ruu:Slider("slider2", sliderPressed, 0.5, 200)
+	local slider3 = self.ruu:Slider("slider3", sliderPressed, 1, 200-40)
+
+	self.ruu:mapNextPrev({ slider1, slider2, slider3 })
 end
 
 function on_input(self, action_id, action)
 	self.ruu:input(action_id, action)
-	if action_id == hash("enter") and action.pressed then
-		self.ruu:get("radio4"):setChecked(math.random() > 0.5)
-	end
 end
