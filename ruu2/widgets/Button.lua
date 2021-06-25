@@ -38,26 +38,26 @@ function Button.unhover(self)
 	if self.isPressed then  self:release(true)  end -- Release without firing.
 end
 
-function Button.focus(self)
+function Button.focus(self, isKeyboard)
 	self.isFocused = true
-	self.wgtTheme.focus(self)
+	self.wgtTheme.focus(self, isKeyboard)
 end
 
-function Button.unfocus(self)
+function Button.unfocus(self, isKeyboard)
 	self.isFocused = false
-	self.wgtTheme.unfocus(self)
+	self.wgtTheme.unfocus(self, isKeyboard)
 	if self.isPressed then  self:release(true)  end -- Release without firing.
 end
 
 function Button.press(self, mx, my, isKeyboard)
 	self.isPressed = true
-	self.wgtTheme.press(self, mx, my)
+	self.wgtTheme.press(self, mx, my, isKeyboard)
 	if self.pressFn then  self:pressFn(mx, my, isKeyboard)  end
 end
 
 function Button.release(self, dontFire, mx, my, isKeyboard)
 	self.isPressed = false
-	self.wgtTheme.release(self, dontFire, mx, my)
+	self.wgtTheme.release(self, dontFire, mx, my, isKeyboard)
 	if self.releaseFn and not dontFire then
 		if self.releaseArgs then
 			self.releaseFn(self.owner, self, unpack(self.releaseArgs))

@@ -12,10 +12,14 @@ local SliderHandle = require("ruu2.widgets.SliderHandle")
 
 local CLICK = hash("touch")
 local ENTER = hash("enter")
+local TEXT = hash("text")
+local BACKSPACE = hash("backspace")
 local NAV_DIRS = {
 	[hash("up")] = "up", [hash("down")] = "down", [hash("left")] = "left", [hash("right")] = "right",
 	[hash("next")] = "next", [hash("prev")] = "prev"
 }
+local IS_KEYBOARD = true
+local IS_NOT_KEYBOARD = false
 
 Ruu.layerPrecision = 10000 -- Number of different nodes allowed in each layer.
 -- Layer index multiplied by this in getDrawIndex() calculation.
@@ -92,13 +96,13 @@ function Ruu.destroy(self, widget)
 	if widget.final then  widget:final()  end
 end
 
-function Ruu.setFocus(self, widget)
+function Ruu.setFocus(self, widget, isKeyboard)
 	if widget == self.focusedWidget then  return  end
 	if self.focusedWidget then
-		self.focusedWidget:unfocus() -- isKeyboard
+		self.focusedWidget:unfocus(isKeyboard)
 	end
 	self.focusedWidget = widget
-	widget:focus()
+	widget:focus(isKeyboard)
 end
 
 local function loopedIndex(list, index)
@@ -228,25 +232,27 @@ function Ruu.input(self, action_id, action)
 	elseif action_id == CLICK then
 		if action.pressed then
 			if self.topHoveredWgt then
-				self.topHoveredWgt:press(self.mx, self.my)
+				self.topHoveredWgt:press(self.mx, self.my, IS_NOT_KEYBOARD)
 				self:startDrag(self.topHoveredWgt)
-				self:setFocus(self.topHoveredWgt)
+				self:setFocus(self.topHoveredWgt, IS_NOT_KEYBOARD)
 			end
 		elseif action.released then
 			local wasDragging = self.drags[1]
 			if wasDragging then  self:stopDrag()  end
 			if self.topHoveredWgt and self.topHoveredWgt.isPressed then
-				self.topHoveredWgt:release(nil, self.mx, self.my)
+				self.topHoveredWgt:release(nil, self.mx, self.my, IS_NOT_KEYBOARD)
 			end
 			-- Want to release the dragged node before updating hover.
 			if wasDragging then  self:mouseMoved(self.mx, self.my, 0, 0)  end
 		end
 	elseif action_id == ENTER then
 		if action.pressed then
-			if self.focusedWidget then  self.focusedWidget:press()  end
+			if self.focusedWidget then
+				self.focusedWidget:press(nil, nil, IS_KEYBOARD)
+			end
 		elseif action.released then
 			if self.focusedWidget and self.focusedWidget.isPressed then
-				self.focusedWidget:release()
+				self.focusedWidget:release(false, nil, nil, IS_KEYBOARD)
 			end
 		end
 	elseif action.pressed and NAV_DIRS[action_id] then
@@ -256,8 +262,20 @@ function Ruu.input(self, action_id, action)
 			if neighbor == 1 then -- No neighbor, but used input.
 				return true
 			elseif neighbor then
-				self:setFocus(neighbor)
+				self:setFocus(neighbor, IS_KEYBOARD)
 			end
+		end
+	elseif action == TEXT then
+		local widget = self.focusedWidget
+		if widget and widget.textInput then
+			widget:textInput(action.text)
+			return true
+		end
+	elseif action == BACKSPACE and action.pressed then
+		local widget = self.focusedWidget
+		if widget and widget.backspace then
+			widget:backspace()
+			return true
 		end
 	end
 end

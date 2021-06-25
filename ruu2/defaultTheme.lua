@@ -27,19 +27,19 @@ function Button.unhover(self)
 	setValue(self, 0.4)
 end
 
-function Button.focus(self)
+function Button.focus(self, isKeyboard)
 	gui.set_enabled(self.focusNode, true)
 end
 
-function Button.unfocus(self)
+function Button.unfocus(self, isKeyboard)
 	gui.set_enabled(self.focusNode, false)
 end
 
-function Button.press(self)
+function Button.press(self, mx, my, isKeyboard)
 	setValue(self, 0.8)
 end
 
-function Button.release(self)
+function Button.release(self, dontFire, mx, my, isKeyboard)
 	setValue(self, self.isHovered and 0.5 or 0.4)
 end
 
@@ -53,8 +53,8 @@ function ToggleButton.init(self, nodeName)
 	gui.set_rotation(self.node, rot)
 end
 
-function ToggleButton.release(self)
-	ToggleButton.super.release(self)
+function ToggleButton.release(self, dontFire, mx, my, isKeyboard)
+	ToggleButton.super.release(self, dontFire, mx, my, isKeyboard)
 	local rot = vmath.quat_rotation_z(self.isChecked and math.pi/6 or 0)
 	gui.set_rotation(self.node, rot)
 end

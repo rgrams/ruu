@@ -19,7 +19,7 @@ function ToggleButton.release(self, dontFire, mx, my, isKeyboard)
 			end
 		end
 	end
-	self.wgtTheme.release(self, dontFire, mx, my)
+	self.wgtTheme.release(self, dontFire, mx, my, isKeyboard)
 end
 
 function ToggleButton.setChecked(self, isChecked)
