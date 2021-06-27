@@ -69,6 +69,35 @@ local RadioButton = ToggleButton:extend()
 M.RadioButton = RadioButton
 
 
+--##############################  INPUT-FIELD  ##############################
+local InputField = Button:extend()
+M.InputField = InputField
+
+function InputField.init(self, nodeName)
+	InputField.super.init(self, nodeName)
+	self.cursorNode = gui.get_node(nodeName .. "/cursor")
+	gui.set_enabled(self.cursorNode, self.isFocused)
+end
+
+function InputField.focus(self, isKeyboard)
+	InputField.super.focus(self, isKeyboard)
+	gui.set_enabled(self.cursorNode, self.isFocused)
+end
+
+function InputField.unfocus(self, isKeyboard)
+	InputField.super.unfocus(self, isKeyboard)
+	gui.set_enabled(self.cursorNode, self.isFocused)
+end
+
+function InputField.updateCursor(self)
+	local pos = gui.get_position(self.cursorNode)
+	pos.x = self.cursorX
+	gui.set_position(self.cursorNode, pos)
+end
+
+function InputField.updateText(self)
+end
+
 --##############################  SLIDER - HANDLE  ##############################
 local SliderHandle = Button:extend()
 M.SliderHandle = SliderHandle
@@ -112,19 +141,6 @@ function ScrollArea.focus(self)  end
 function ScrollArea.unfocus(self)  end
 function ScrollArea.press(self)  end
 function ScrollArea.release(self)  end
-
---##############################  INPUT-FIELD  ##############################
-local InputField = Button:extend()
-M.InputField = InputField
-
-function InputField.init(self)
-	InputField.super.init(self)
-	self.textObj.color[4] = 0.5
-end
-
-function InputField.setText(self)
-	self.textObj.color[4] = 1
-end
 
 --##############################  PANEL  ##############################
 local Panel = Class:extend()

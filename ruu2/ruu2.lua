@@ -9,6 +9,7 @@ local Button = require("ruu2.widgets.Button")
 local ToggleButton = require("ruu2.widgets.ToggleButton")
 local RadioButton = require("ruu2.widgets.RadioButton")
 local SliderHandle = require("ruu2.widgets.SliderHandle")
+local InputField = require("ruu2.widgets.InputField")
 
 local CLICK = hash("touch")
 local ENTER = hash("enter")
@@ -61,6 +62,12 @@ end
 
 function Ruu.Slider(self, nodeName, releaseFn, fraction, length, wgtTheme)
 	local btn = SliderHandle(self, self.owner, nodeName, releaseFn, fraction, length, wgtTheme or self.theme.SliderHandle)
+	addWidget(self, nodeName, btn)
+	return btn
+end
+
+function Ruu.InputField(self, nodeName, releaseFn, text, wgtTheme)
+	local btn = InputField(self, self.owner, nodeName, releaseFn, text, wgtTheme or self.theme.InputField)
 	addWidget(self, nodeName, btn)
 	return btn
 end
@@ -265,13 +272,13 @@ function Ruu.input(self, action_id, action)
 				self:setFocus(neighbor, IS_KEYBOARD)
 			end
 		end
-	elseif action == TEXT then
+	elseif action_id == TEXT then
 		local widget = self.focusedWidget
 		if widget and widget.textInput then
 			widget:textInput(action.text)
 			return true
 		end
-	elseif action == BACKSPACE and action.pressed then
+	elseif action_id == BACKSPACE and (action.pressed or action.repeated) then
 		local widget = self.focusedWidget
 		if widget and widget.backspace then
 			widget:backspace()

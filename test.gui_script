@@ -28,6 +28,10 @@ local function sliderPressed(self, btn)
 	print("sliderPressed")
 end
 
+local function inputFieldReleaseFn(self, btn)
+	print("input field pressed")
+end
+
 function init(self)
 	self.ruu = Ruu(self, getInput)
 	self.ruu:registerLayers({"", "foreground", "text"})
@@ -56,6 +60,13 @@ function init(self)
 	local slider3 = self.ruu:Slider("slider3", sliderPressed, 1, 200-40)
 
 	self.ruu:mapNextPrev({ slider1, slider2, slider3 })
+
+	self.ruu:InputField("input1", inputFieldReleaseFn, "input text")
+
+	for i,text in ipairs({"my text", "   my text", "my text   "}) do
+		local width = gui.get_text_metrics(hash("default"), text).width
+		print("'" .. text .. "' - " .. width)
+	end
 end
 
 function on_input(self, action_id, action)
