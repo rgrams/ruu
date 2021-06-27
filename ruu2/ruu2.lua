@@ -44,7 +44,7 @@ function Ruu.ToggleButton(self, nodeName, releaseFn, isChecked, wgtTheme)
 end
 
 function Ruu.RadioButton(self, nodeName, releaseFn, isChecked, wgtTheme)
-	local btn = RadioButton(self, self.owner, nodeName, releaseFn, isChecked, wgtTheme or self.theme.ToggleButton)
+	local btn = RadioButton(self, self.owner, nodeName, releaseFn, isChecked, wgtTheme or self.theme.RadioButton)
 	addWidget(self, nodeName, btn)
 	return btn
 end
