@@ -219,6 +219,7 @@ function Ruu.mouseMoved(self, x, y, dx, dy)
 	end
 
 	if foundHit then
+		-- If dragging, only use a/the dragged widget as the top hovered widget.
 		local widgetDict = not self.drags[1] and self.hoveredWidgets or self.dragsOnWgt
 		local topWidget = util.getTopWidget(widgetDict, "node", self.layerDepths)
 		if self.topHoveredWgt and self.topHoveredWgt ~= topWidget then
@@ -234,6 +235,10 @@ function Ruu.mouseMoved(self, x, y, dx, dy)
 	end
 end
 
+local function isDraggable(widget)
+	return widget.drag
+end
+
 function Ruu.input(self, action_id, action)
 	if not action_id then
 		self:mouseMoved(action.x, action.y, action.dx, action.dy)
@@ -241,8 +246,10 @@ function Ruu.input(self, action_id, action)
 		if action.pressed then
 			if self.topHoveredWgt then
 				self.topHoveredWgt:press(self.mx, self.my, IS_NOT_KEYBOARD)
-				self:startDrag(self.topHoveredWgt)
 				self:setFocus(self.topHoveredWgt, IS_NOT_KEYBOARD)
+				-- Start drag - do it on mouse down instead of mouse move so we can easily set up initial drag offsets, etc.
+				local topDraggableWgt = util.getTopWidget(self.hoveredWidgets, "node", self.layerDepths, isDraggable)
+				if topDraggableWgt then  self:startDrag(topDraggableWgt)  end
 			end
 		elseif action.released then
 			local wasDragging = self.drags[1]

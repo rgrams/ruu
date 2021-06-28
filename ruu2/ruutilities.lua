@@ -39,14 +39,21 @@ function M.getDrawIndex(node, layerDepths) -- combines layer and index to get an
 	return layerDepth + index
 end
 
-function M.getTopWidget(widgetDict, wgtNodeKey, layerDepths) -- find widget with highest drawIndex
+function M.getTopWidget(widgetDict, wgtNodeKey, layerDepths, conditionFn) -- find widget with highest drawIndex
 	local maxIdx, topWidget = -1, nil
 	for widget,_ in pairs(widgetDict) do
 		local node = widget[wgtNodeKey]
 		local drawIdx = M.getDrawIndex(node, layerDepths)
 		if drawIdx > maxIdx then
-			maxIdx = drawIdx
-			topWidget = widget
+			if conditionFn then
+				if conditionFn(widget) then
+					maxIdx = drawIdx
+					topWidget = widget
+				end
+			else
+				maxIdx = drawIdx
+				topWidget = widget
+			end
 		end
 	end
 	return topWidget
