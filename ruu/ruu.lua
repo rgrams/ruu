@@ -82,17 +82,16 @@ function Ruu.setEnabled(self, widget, enabled)
 	widget.isEnabled = enabled
 
 	if not enabled then
+		if self.dragsOnWgt[widget] then  self:stopDragsOnWidget(widget)  end
 		if self.hoveredWidgets[widget] then
 			self.hoveredWidgets[widget] = nil
 			self:mouseMoved(self.mx, self.my, 0, 0)
 		end
-		-- if self.objDragCount[widget] then  stopDrag(self, "object", widget)  end
-		-- if self.focusedWidget == widget then
-			-- widget:call("unfocus")
-			-- self.focusedWidget = nil -- Just remove it, don't change ancestor panel focus.
-		-- end
-		if widget.isHovered then  widget:call("unhover")  end
-		if widget.isPressed then  widget:call("release", true)  end
+		if self.focusedWidget == widget then
+			widget:unfocus()
+			self.focusedWidget = nil
+		end
+		if widget.isPressed then  widget:release(true)  end
 	end
 end
 
@@ -176,14 +175,26 @@ function Ruu.startDrag(self, widget, dragType)
 	end
 end
 
+local function removeDrag(self, index)
+	local drag = self.drags[index]
+	self.drags[index] = nil
+	local dragsOnWgt = self.dragsOnWgt[drag.widget] - 1
+	dragsOnWgt = dragsOnWgt > 0 and dragsOnWgt or nil
+	self.dragsOnWgt[drag.widget] = dragsOnWgt
+end
+
 function Ruu.stopDrag(self, dragType)
 	for i=#self.drags,1,-1 do
-		local drag = self.drags[i]
-		if drag.type == dragType then
-			self.drags[i] = nil
-			local dragsOnWgt = self.dragsOnWgt[drag.widget] - 1
-			dragsOnWgt = dragsOnWgt > 0 and dragsOnWgt or nil
-			self.dragsOnWgt[drag.widget] = dragsOnWgt
+		if self.drags[i].type == dragType then
+			removeDrag(self, i)
+		end
+	end
+end
+
+function Ruu.stopDragsOnWidget(self, widget)
+	for i=#self.drags,1,-1 do
+		if self.drags[i].widget == widget then
+			removeDrag(self, i)
 		end
 	end
 end
