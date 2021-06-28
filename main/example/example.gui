@@ -1,7 +1,7 @@
 script: "/main/example/example.gui_script"
 fonts {
   name: "test font"
-  font: "/ruu/widget templates/assets/default.font"
+  font: "/ruu1/widget templates/assets/default.font"
 }
 background_color {
   x: 0.0
@@ -100,7 +100,7 @@ nodes {
   layer: ""
   inherit_alpha: false
   alpha: 1.0
-  template: "/ruu/widget templates/template_button.gui"
+  template: "/ruu1/widget templates/template_button.gui"
   template_node_child: false
 }
 nodes {
@@ -314,7 +314,7 @@ nodes {
   layer: ""
   inherit_alpha: false
   alpha: 1.0
-  template: "/ruu/widget templates/template_button.gui"
+  template: "/ruu1/widget templates/template_button.gui"
   template_node_child: false
 }
 nodes {
@@ -528,7 +528,7 @@ nodes {
   layer: ""
   inherit_alpha: false
   alpha: 1.0
-  template: "/ruu/widget templates/template_toggleButton.gui"
+  template: "/ruu1/widget templates/template_toggleButton.gui"
   template_node_child: false
 }
 nodes {
@@ -797,7 +797,7 @@ nodes {
   layer: ""
   inherit_alpha: false
   alpha: 1.0
-  template: "/ruu/widget templates/template_toggleButton.gui"
+  template: "/ruu1/widget templates/template_toggleButton.gui"
   template_node_child: false
 }
 nodes {
@@ -1066,7 +1066,7 @@ nodes {
   layer: ""
   inherit_alpha: false
   alpha: 1.0
-  template: "/ruu/widget templates/template_toggleButton.gui"
+  template: "/ruu1/widget templates/template_toggleButton.gui"
   template_node_child: false
 }
 nodes {
@@ -1335,7 +1335,7 @@ nodes {
   layer: ""
   inherit_alpha: false
   alpha: 1.0
-  template: "/ruu/widget templates/template_radioButton.gui"
+  template: "/ruu1/widget templates/template_radioButton.gui"
   template_node_child: false
 }
 nodes {
@@ -1603,7 +1603,7 @@ nodes {
   layer: ""
   inherit_alpha: false
   alpha: 1.0
-  template: "/ruu/widget templates/template_radioButton.gui"
+  template: "/ruu1/widget templates/template_radioButton.gui"
   template_node_child: false
 }
 nodes {
@@ -1871,7 +1871,7 @@ nodes {
   layer: ""
   inherit_alpha: false
   alpha: 1.0
-  template: "/ruu/widget templates/template_radioButton.gui"
+  template: "/ruu1/widget templates/template_radioButton.gui"
   template_node_child: false
 }
 nodes {
@@ -2139,7 +2139,7 @@ nodes {
   layer: ""
   inherit_alpha: false
   alpha: 1.0
-  template: "/ruu/widget templates/template_radioButton.gui"
+  template: "/ruu1/widget templates/template_radioButton.gui"
   template_node_child: false
 }
 nodes {
@@ -2407,7 +2407,7 @@ nodes {
   layer: ""
   inherit_alpha: false
   alpha: 1.0
-  template: "/ruu/widget templates/template_radioButton.gui"
+  template: "/ruu1/widget templates/template_radioButton.gui"
   template_node_child: false
 }
 nodes {
@@ -2675,7 +2675,7 @@ nodes {
   layer: ""
   inherit_alpha: false
   alpha: 1.0
-  template: "/ruu/widget templates/template_slider.gui"
+  template: "/ruu1/widget templates/template_slider.gui"
   template_node_child: false
 }
 nodes {
@@ -2935,7 +2935,7 @@ nodes {
   layer: ""
   inherit_alpha: false
   alpha: 1.0
-  template: "/ruu/widget templates/template_scrollBar.gui"
+  template: "/ruu1/widget templates/template_scrollBar.gui"
   template_node_child: false
 }
 nodes {
@@ -3366,7 +3366,7 @@ nodes {
   layer: ""
   inherit_alpha: true
   alpha: 1.0
-  template: "/ruu/widget templates/template_scrollBar.gui"
+  template: "/ruu1/widget templates/template_scrollBar.gui"
   template_node_child: false
 }
 nodes {
@@ -3625,7 +3625,7 @@ nodes {
   layer: ""
   inherit_alpha: true
   alpha: 1.0
-  template: "/ruu/widget templates/template_inputField.gui"
+  template: "/ruu1/widget templates/template_inputField.gui"
   template_node_child: false
 }
 nodes {
@@ -3947,7 +3947,7 @@ nodes {
   layer: ""
   inherit_alpha: true
   alpha: 1.0
-  template: "/ruu/widget templates/template_scrollArea.gui"
+  template: "/ruu1/widget templates/template_scrollArea.gui"
   template_node_child: false
 }
 nodes {
@@ -4163,7 +4163,7 @@ nodes {
   overridden_fields: 1
   overridden_fields: 2
   overridden_fields: 3
-  template: "/ruu/widget templates/template_toggleButton.gui"
+  template: "/ruu1/widget templates/template_toggleButton.gui"
   template_node_child: true
 }
 nodes {

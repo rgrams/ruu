@@ -1,5 +1,5 @@
 
-local Class = require "ruu2.base-class"
+local Class = require "ruu.base-class"
 local Button = Class:extend()
 
 Button.isHovered = false

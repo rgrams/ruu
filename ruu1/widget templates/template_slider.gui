@@ -1,11 +1,11 @@
 script: ""
 fonts {
   name: "test font"
-  font: "/ruu/widget templates/assets/default.font"
+  font: "/ruu1/widget templates/assets/default.font"
 }
 textures {
   name: "ruu_default"
-  texture: "/ruu/widget templates/assets/ruu_default.atlas"
+  texture: "/ruu1/widget templates/assets/ruu_default.atlas"
 }
 background_color {
   x: 0.0
@@ -27,32 +27,87 @@ nodes {
     w: 1.0
   }
   scale {
-    x: 0.9
-    y: 0.9
+    x: 1.0
+    y: 1.0
     z: 1.0
     w: 1.0
   }
   size {
-    x: 300.0
-    y: 60.0
+    x: 5.0
+    y: 70.0
     z: 0.0
     w: 1.0
   }
   color {
-    x: 0.4
-    y: 0.4
-    z: 0.4
+    x: 0.2
+    y: 0.2
+    z: 0.2
     w: 1.0
   }
   type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
   texture: "ruu_default/TEX_Square_64"
-  id: "body"
+  id: "root"
   xanchor: XANCHOR_NONE
   yanchor: YANCHOR_NONE
   pivot: PIVOT_CENTER
   adjust_mode: ADJUST_MODE_FIT
-  layer: "foreground"
+  layer: "rear foreground"
+  inherit_alpha: true
+  slice9 {
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0
+  }
+  clipping_mode: CLIPPING_MODE_NONE
+  clipping_visible: true
+  clipping_inverted: false
+  alpha: 1.0
+  template_node_child: false
+  size_mode: SIZE_MODE_MANUAL
+}
+nodes {
+  position {
+    x: 200.0
+    y: 0.0
+    z: 0.0
+    w: 1.0
+  }
+  rotation {
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 1.0
+  }
+  scale {
+    x: 1.0
+    y: 1.0
+    z: 1.0
+    w: 1.0
+  }
+  size {
+    x: 5.0
+    y: 70.0
+    z: 0.0
+    w: 1.0
+  }
+  color {
+    x: 0.2
+    y: 0.2
+    z: 0.2
+    w: 1.0
+  }
+  type: TYPE_BOX
+  blend_mode: BLEND_MODE_ALPHA
+  texture: "ruu_default/TEX_Square_64"
+  id: "endpoint"
+  xanchor: XANCHOR_NONE
+  yanchor: YANCHOR_NONE
+  pivot: PIVOT_CENTER
+  adjust_mode: ADJUST_MODE_FIT
+  parent: "root"
+  layer: "rear foreground"
   inherit_alpha: true
   slice9 {
     x: 0.0
@@ -70,7 +125,7 @@ nodes {
 nodes {
   position {
     x: 0.0
-    y: 2.0
+    y: 0.0
     z: 0.0
     w: 1.0
   }
@@ -87,48 +142,40 @@ nodes {
     w: 1.0
   }
   size {
-    x: 250.0
-    y: 100.0
+    x: 50.0
+    y: 50.0
     z: 0.0
     w: 1.0
   }
   color {
-    x: 1.0
-    y: 1.0
-    z: 1.0
+    x: 0.4
+    y: 0.4
+    z: 0.4
     w: 1.0
   }
-  type: TYPE_TEXT
+  type: TYPE_BOX
   blend_mode: BLEND_MODE_ALPHA
-  text: "Quit To Menu"
-  font: "test font"
-  id: "text"
+  texture: "ruu_default/TEX_Square_64"
+  id: "body"
   xanchor: XANCHOR_NONE
   yanchor: YANCHOR_NONE
   pivot: PIVOT_CENTER
-  outline {
-    x: 1.0
-    y: 1.0
-    z: 1.0
-    w: 1.0
-  }
-  shadow {
-    x: 1.0
-    y: 1.0
-    z: 1.0
-    w: 1.0
-  }
   adjust_mode: ADJUST_MODE_FIT
-  line_break: true
-  parent: "body"
-  layer: "text"
-  inherit_alpha: false
-  alpha: 1.0
-  outline_alpha: 0.0
-  shadow_alpha: 0.0
+  parent: "root"
+  layer: "foreground"
+  inherit_alpha: true
+  slice9 {
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 0.0
+  }
+  clipping_mode: CLIPPING_MODE_NONE
+  clipping_visible: true
+  clipping_inverted: false
+  alpha: 0.7
   template_node_child: false
-  text_leading: 1.0
-  text_tracking: 0.0
+  size_mode: SIZE_MODE_MANUAL
 }
 nodes {
   position {
@@ -150,8 +197,8 @@ nodes {
     w: 1.0
   }
   size {
-    x: 300.0
-    y: 60.0
+    x: 50.0
+    y: 50.0
     z: 0.0
     w: 1.0
   }
@@ -195,5 +242,5 @@ layers {
   name: "text"
 }
 material: "/builtins/materials/gui.material"
-adjust_reference: ADJUST_REFERENCE_LEGACY
+adjust_reference: ADJUST_REFERENCE_PARENT
 max_nodes: 512

@@ -1,5 +1,5 @@
 
-local Button = require "ruu2.widgets.Button"
+local Button = require "ruu.widgets.Button"
 
 local SliderHandle = Button:extend()
 
@@ -35,6 +35,7 @@ function SliderHandle.set(self, ruu, owner, nodeName, releaseFn, fraction, lengt
 	self.barNode = gui.get_node(nodeName .. "/bar")
 	self:updatePos(self, nil, nil) -- To update slider pos based on current fraction.
 
+	print(self, tonumber(self.id))
 	-- Other possible settings: dragFunc, offset, nudgeDist, barClickDist, themeType, theme
 end
 

@@ -1,5 +1,5 @@
 
-local Button = require "ruu2.widgets.Button"
+local Button = require "ruu.widgets.Button"
 local ToggleButton = Button:extend()
 
 function ToggleButton.set(self, ruu, owner, nodeName, releaseFn, isChecked, wgtTheme)

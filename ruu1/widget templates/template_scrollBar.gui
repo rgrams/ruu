@@ -1,11 +1,11 @@
 script: ""
 fonts {
   name: "test font"
-  font: "/ruu/widget templates/assets/default.font"
+  font: "/ruu1/widget templates/assets/default.font"
 }
 textures {
   name: "ruu_default"
-  texture: "/ruu/widget templates/assets/ruu_default.atlas"
+  texture: "/ruu1/widget templates/assets/ruu_default.atlas"
 }
 background_color {
   x: 0.0

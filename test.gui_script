@@ -1,5 +1,5 @@
 
-local Ruu = require "ruu2.ruu2"
+local Ruu = require "ruu.ruu"
 
 local function getInput()
 end
