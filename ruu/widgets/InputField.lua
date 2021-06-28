@@ -133,4 +133,12 @@ function InputField.backspace(self)
 	self.wgtTheme.updateText(self)
 end
 
+function InputField.setText(self, text)
+	self.text = text
+	_sendCb(self, self.editFn) -- Can modify self.text.
+	gui.set_text(self.textNode, self.text)
+	self:updateCursorPos()
+	self.wgtTheme.updateText(self)
+end
+
 return InputField
