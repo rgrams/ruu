@@ -11,12 +11,12 @@ local RadioButton = require("ruu.widgets.RadioButton")
 local SliderHandle = require("ruu.widgets.SliderHandle")
 local InputField = require("ruu.widgets.InputField")
 
-local CLICK = hash("touch")
-local ENTER = hash("enter")
-local TEXT = hash("text")
-local BACKSPACE = hash("backspace")
-local CANCEL = hash("cancel")
-local NAV_DIRS = {
+Ruu.CLICK = hash("touch")
+Ruu.ENTER = hash("enter")
+Ruu.TEXT = hash("text")
+Ruu.BACKSPACE = hash("backspace")
+Ruu.CANCEL = hash("cancel")
+Ruu.NAV_DIRS = {
 	[hash("up")] = "up", [hash("down")] = "down", [hash("left")] = "left", [hash("right")] = "right",
 	[hash("next")] = "next", [hash("prev")] = "prev"
 }
@@ -242,7 +242,7 @@ end
 function Ruu.input(self, action_id, action)
 	if not action_id then
 		self:mouseMoved(action.x, action.y, action.dx, action.dy)
-	elseif action_id == CLICK then
+	elseif action_id == self.CLICK then
 		if action.pressed then
 			if self.topHoveredWgt then
 				self.topHoveredWgt:press(self.mx, self.my, IS_NOT_KEYBOARD)
@@ -260,7 +260,7 @@ function Ruu.input(self, action_id, action)
 			-- Want to release the dragged node before updating hover.
 			if wasDragging then  self:mouseMoved(self.mx, self.my, 0, 0)  end
 		end
-	elseif action_id == ENTER then
+	elseif action_id == self.ENTER then
 		if action.pressed then
 			if self.focusedWidget then
 				self.focusedWidget:press(nil, nil, IS_KEYBOARD)
@@ -270,9 +270,9 @@ function Ruu.input(self, action_id, action)
 				self.focusedWidget:release(false, nil, nil, IS_KEYBOARD)
 			end
 		end
-	elseif action.pressed and NAV_DIRS[action_id] then
+	elseif action.pressed and self.NAV_DIRS[action_id] then
 		if self.focusedWidget then
-			local dirStr = NAV_DIRS[action_id]
+			local dirStr = self.NAV_DIRS[action_id]
 			local neighbor = self.focusedWidget:getFocusNeighbor(dirStr)
 			if neighbor == 1 then -- No neighbor, but used input.
 				return true
@@ -280,19 +280,19 @@ function Ruu.input(self, action_id, action)
 				self:setFocus(neighbor, IS_KEYBOARD)
 			end
 		end
-	elseif action_id == TEXT then
+	elseif action_id == self.TEXT then
 		local widget = self.focusedWidget
 		if widget and widget.textInput then
 			widget:textInput(action.text)
 			return true
 		end
-	elseif action_id == BACKSPACE and (action.pressed or action.repeated) then
+	elseif action_id == self.BACKSPACE and (action.pressed or action.repeated) then
 		local widget = self.focusedWidget
 		if widget and widget.backspace then
 			widget:backspace()
 			return true
 		end
-	elseif action_id == CANCEL and action.pressed then
+	elseif action_id == self.CANCEL and action.pressed then
 		local widget = self.focusedWidget
 		if widget and widget.cancel then
 			widget:cancel()
