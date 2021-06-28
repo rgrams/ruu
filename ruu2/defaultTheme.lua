@@ -98,6 +98,9 @@ end
 function InputField.updateText(self)
 end
 
+function InputField.textRejected(self, rejectedText)
+end
+
 --##############################  SLIDER - HANDLE  ##############################
 local SliderHandle = Button:extend()
 M.SliderHandle = SliderHandle

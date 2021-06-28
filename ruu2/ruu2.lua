@@ -15,6 +15,7 @@ local CLICK = hash("touch")
 local ENTER = hash("enter")
 local TEXT = hash("text")
 local BACKSPACE = hash("backspace")
+local CANCEL = hash("cancel")
 local NAV_DIRS = {
 	[hash("up")] = "up", [hash("down")] = "down", [hash("left")] = "left", [hash("right")] = "right",
 	[hash("next")] = "next", [hash("prev")] = "prev"
@@ -66,8 +67,8 @@ function Ruu.Slider(self, nodeName, releaseFn, fraction, length, wgtTheme)
 	return btn
 end
 
-function Ruu.InputField(self, nodeName, releaseFn, text, wgtTheme)
-	local btn = InputField(self, self.owner, nodeName, releaseFn, text, wgtTheme or self.theme.InputField)
+function Ruu.InputField(self, nodeName, confirmFn, text, wgtTheme)
+	local btn = InputField(self, self.owner, nodeName, confirmFn, text, wgtTheme or self.theme.InputField)
 	addWidget(self, nodeName, btn)
 	return btn
 end
@@ -282,6 +283,12 @@ function Ruu.input(self, action_id, action)
 		local widget = self.focusedWidget
 		if widget and widget.backspace then
 			widget:backspace()
+			return true
+		end
+	elseif action_id == CANCEL and action.pressed then
+		local widget = self.focusedWidget
+		if widget and widget.cancel then
+			widget:cancel()
 			return true
 		end
 	end

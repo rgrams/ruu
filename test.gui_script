@@ -28,8 +28,19 @@ local function sliderPressed(self, btn)
 	print("sliderPressed")
 end
 
-local function inputFieldReleaseFn(self, btn)
-	print("input field pressed")
+local function inputFieldConfirmed(self, btn, field)
+	print("input confirmed ", field, btn.text)
+	if not tonumber(btn.text) then
+		print("reject input")
+		return true
+	end
+end
+
+local function inputEdited(self, btn, field)
+	print(btn.text, field)
+	if not tonumber(btn.text) then
+		print("  invalid input")
+	end
 end
 
 function init(self)
@@ -61,12 +72,9 @@ function init(self)
 
 	self.ruu:mapNextPrev({ slider1, slider2, slider3 })
 
-	self.ruu:InputField("input1", inputFieldReleaseFn, "input text")
-
-	for i,text in ipairs({"my text", "   my text", "my text   "}) do
-		local width = gui.get_text_metrics(hash("default"), text).width
-		print("'" .. text .. "' - " .. width)
-	end
+	local input1 = self.ruu:InputField("input1", inputFieldConfirmed, "name..."):args("name"):onEdit(inputEdited)
+	local input2 = self.ruu:InputField("input2", inputFieldConfirmed, "value..."):args("value"):onEdit(inputEdited)
+	self.ruu:mapNextPrev({ input1, input2 })
 end
 
 function on_input(self, action_id, action)

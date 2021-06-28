@@ -1,6 +1,6 @@
 key_trigger {
   input: KEY_ESC
-  action: "escape"
+  action: "cancel"
 }
 key_trigger {
   input: KEY_ENTER
