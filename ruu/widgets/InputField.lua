@@ -134,7 +134,7 @@ function InputField.backspace(self)
 end
 
 function InputField.setText(self, text)
-	self.text = text
+	self.text = text ~= nil and tostring(text) or ""
 	_sendCb(self, self.editFn) -- Can modify self.text.
 	gui.set_text(self.textNode, self.text)
 	self:updateCursorPos()
