@@ -96,6 +96,7 @@ function Ruu.setEnabled(self, widget, enabled)
 end
 
 function Ruu.destroy(self, widget)
+	assert(self.allWidgets[widget], "Ruu.destroy - Widget not found " .. tostring(widget))
 	self.setEnabled(self, widget, false)
 	local name = self.allWidgets[widget]
 	self.allWidgets[widget] = nil
