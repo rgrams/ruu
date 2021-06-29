@@ -34,8 +34,8 @@ local function addWidget(self, name, widget)
 end
 
 function Ruu.rename(self, oldName, newName)
-	assert(self.widgetsByName[oldName], "Ruu.rename - No widget registered with name '"..tostring(name).."'.")
-	assert(not self.widgetsByName[newName], "Ruu.rename - Name conflict with name '"..tostring(name).."'.")
+	assert(self.widgetsByName[oldName], "Ruu.rename - No widget registered with name '"..tostring(oldName).."'.")
+	assert(not self.widgetsByName[newName], "Ruu.rename - Name conflict with name '"..tostring(newName).."'.")
 	self.widgetsByName[newName] = self.widgetsByName[oldName]
 	self.widgetsByName[oldName] = nil
 end
