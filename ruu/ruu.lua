@@ -96,7 +96,11 @@ function Ruu.setEnabled(self, widget, enabled)
 end
 
 function Ruu.destroy(self, widget)
-	assert(self.allWidgets[widget], "Ruu.destroy - Widget not found " .. tostring(widget))
+	if not self.allWidgets[widget] then
+		local t = type(widget)
+		if t ~= "table" then  error("Ruu.destroy - Requires a widget object, not '" .. tostring(widget) .. "' of type '" .. t .. "'.")
+		else  error("Ruu.destroy - Widget not found " .. tostring(widget))  end
+	end
 	self.setEnabled(self, widget, false)
 	local name = self.allWidgets[widget]
 	self.allWidgets[widget] = nil
