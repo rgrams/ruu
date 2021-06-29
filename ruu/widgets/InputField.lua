@@ -5,7 +5,7 @@ local InputField = Button:extend()
 local endChar = "|"
 
 function InputField.set(self, ruu, owner, nodeName, confirmFn, text, wgtTheme)
-	self.text = text or ""
+	self.text = tostring(text) or ""
 	self.oldText = self.text
 	self._maskNode = gui.get_node(nodeName .. "/mask")
 	self.textNode = gui.get_node(nodeName .. "/text")
