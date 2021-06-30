@@ -34,10 +34,13 @@ local function addWidget(self, name, widget)
 end
 
 function Ruu.rename(self, oldName, newName)
-	assert(self.widgetsByName[oldName], "Ruu.rename - No widget registered with name '"..tostring(oldName).."'.")
+	local widget = self.widgetsByName[oldName]
+	assert(widget, "Ruu.rename - No widget registered with name '"..tostring(oldName).."'.")
+	if oldName == newName then  return  end
 	assert(not self.widgetsByName[newName], "Ruu.rename - Name conflict with name '"..tostring(newName).."'.")
-	self.widgetsByName[newName] = self.widgetsByName[oldName]
 	self.widgetsByName[oldName] = nil
+	self.widgetsByName[newName] = widget
+	self.allWidgets[widget] = newName
 end
 
 function Ruu.Button(self, nodeName, releaseFn, wgtTheme)
