@@ -125,7 +125,7 @@ function Ruu.setFocus(self, widget, isKeyboard)
 		self.focusedWidget:unfocus(isKeyboard)
 	end
 	self.focusedWidget = widget
-	widget:focus(isKeyboard)
+	if widget then  widget:focus(isKeyboard)  end
 end
 
 local function loopedIndex(list, index)
@@ -277,6 +277,8 @@ function Ruu.input(self, action_id, action)
 				-- Start drag - do it on mouse down instead of mouse move so we can easily set up initial drag offsets, etc.
 				local topDraggableWgt = util.getTopWidget(self.hoveredWidgets, "node", self.layerDepths, isDraggable)
 				if topDraggableWgt then  self:startDrag(topDraggableWgt)  end
+			else
+				self:setFocus(nil, IS_NOT_KEYBOARD)
 			end
 		elseif action.released then
 			local wasDragging = self.drags[1]
