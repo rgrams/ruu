@@ -38,6 +38,11 @@ function SliderHandle.set(self, ruu, owner, nodeName, releaseFn, fraction, lengt
 	-- Other possible settings: dragFunc, offset, nudgeDist, barClickDist, themeType, theme
 end
 
+function SliderHandle.onDrag(self, dragFn)
+	self.dragFn = dragFn
+	return self -- Allow chaining.
+end
+
 function SliderHandle.updatePos(self, dx, dy, isLocal)
 	local startPoint = -self.length/2 -- Slider handle must be anchored to center point.
 	local endPoint = self.length/2
