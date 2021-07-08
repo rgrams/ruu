@@ -70,6 +70,8 @@ function init(self)
 	local slider2 = self.ruu:Slider("slider2", sliderPressed, 0.5, 200)
 	local slider3 = self.ruu:Slider("slider3", sliderPressed, 1, 200-40)
 
+	slider2.nudgeDist = 15
+
 	self.ruu:mapNextPrev({ slider1, slider2, slider3 })
 
 	local input1 = self.ruu:InputField("input1", inputFieldConfirmed, "name..."):args("name"):onEdit(inputEdited)
