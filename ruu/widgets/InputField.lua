@@ -2,23 +2,35 @@
 local Button = require "ruu.widgets.Button"
 local InputField = Button:extend()
 
+local util = require "ruu.ruutilities"
+
 local endChar = "|"
+
+local function getTextWidth(font, text, endCharWidth)
+	return gui.get_text_metrics(font, text .. endChar).width - endCharWidth
+end
 
 function InputField.set(self, ruu, owner, nodeName, confirmFn, text, wgtTheme)
 	self.text = tostring(text) or ""
-	self.oldText = self.text
-	self._maskNode = gui.get_node(nodeName .. "/mask")
+	self.oldText = self.text -- In case of cancel.
 	self.textNode = gui.get_node(nodeName .. "/text")
-	gui.set_text(self.textNode, self.text)
+	self.textMaskNode = gui.get_node(nodeName .. "/mask")
 	self.font = gui.get_font(self.textNode)
 	self.endCharWidth = gui.get_text_metrics(self.font, endChar).width
-	self.textOriginX = gui.get_position(self.textNode).x
-	self.textScrollX = 0
+	self.textOrigin = gui.get_position(self.textNode)
+	self.textPos = vmath.vector3(self.textOrigin)
+	self.textScrollOX = 0
 	self.confirmFn = confirmFn
+	self.cursorX = self.textOrigin.x
+	-- self.cursorI = 0
+
+	gui.set_text(self.textNode, self.text)
 
 	local releaseFn = nil
 	InputField.super.set(self, ruu, owner, nodeName, releaseFn, wgtTheme)
 
+	self:updateTotalTextWidth()
+	self:updateMaskSize()
 	self:updateCursorPos()
 end
 
@@ -86,59 +98,83 @@ function InputField.cancel(self)
 	self.wgtTheme.updateText(self)
 end
 
-local function getTextWidth(font, text, endCharWidth)
-	local width = gui.get_text_metrics(font, text .. endChar).width
-	width = width - endCharWidth
-	return width
+-- Save left and right edge positions of the text-mask, relative to the parent.
+function InputField.updateMaskSize(self)
+	local pivot = util.PIVOT_VEC[gui.get_pivot(self.textMaskNode)]
+	local width = gui.get_size(self.textMaskNode).x
+	local originX = gui.get_position(self.textMaskNode).x
+	local centerX = originX - pivot.x * width
+
+	self.maskLeftEdgeX, self.maskRightEdgeX = centerX - width/2, centerX + width/2
+end
+
+function InputField.updateTotalTextWidth(self)
+	self.totalTextWidth = getTextWidth(self.font, self.text, self.endCharWidth)
+end
+
+function InputField.setScrollOffset(self, scrollOX)
+	local normalViewWidth = self.maskRightEdgeX - self.textOrigin.x
+	if self.totalTextWidth <= normalViewWidth then
+		scrollOX = 0
+	else -- Don't let the right edge of the text be inside the right edge of the mask.
+		local maxNegScroll = self.totalTextWidth - normalViewWidth
+		scrollOX = math.max(-maxNegScroll, scrollOX)
+	end
+
+	self.textScrollOX = scrollOX
+	self.textPos.x = self.textOrigin.x + self.textScrollOX
+	gui.set_position(self.textNode, self.textPos)
+end
+
+-- Gets the un-scrolled X pos of the -right edge- of the character at `charIdx`.
+function InputField.getCharXOffset(self, charIdx)
+	local preText = self.text:sub(0, charIdx)
+	local x = self.textOrigin.x + getTextWidth(self.font, preText, self.endCharWidth)
+	return x
+end
+
+function InputField.scrollCharOffsetIntoView(self, x)
+	local scrolledX = x + self.textScrollOX
+	if scrolledX > self.maskRightEdgeX then -- Scroll text to the left.
+		local distOutside = scrolledX - self.maskRightEdgeX
+		self:setScrollOffset(self.textScrollOX - distOutside)
+	elseif scrolledX < self.maskLeftEdgeX then -- Scroll text to the right.
+		local distOutside = self.maskLeftEdgeX - scrolledX
+		self:setScrollOffset(self.textScrollOX + distOutside)
+	else
+		self:setScrollOffset(self.textScrollOX)
+	end
 end
 
 function InputField.updateCursorPos(self)
-	local textWidth = getTextWidth(self.font, self.text, self.endCharWidth)
-	self.cursorX = self.textOriginX + textWidth
+	local baseCursorX = self:getCharXOffset(#self.text)
 
-	local maskWidth = gui.get_size(self._maskNode).x
-	local maskPosX = gui.get_position(self._maskNode).x
-	local maskRightX = maskPosX + maskWidth/2
+	self:scrollCharOffsetIntoView(baseCursorX)
 
-	if self.cursorX > maskRightX then -- Move text so cursor is in view.
-		local distOutside = self.cursorX - maskRightX
-		self.cursorX = self.cursorX - distOutside
-		self.textScrollX = -distOutside
-		local pos = gui.get_position(self.textNode)
-		pos.x = self.textOriginX + self.textScrollX
-		gui.set_position(self.textNode, pos)
-	elseif self.textScrollX ~= 0 then
-		self.textScrollX = 0
-		local pos = gui.get_position(self.textNode)
-		pos.x = self.textOriginX + self.textScrollX
-		gui.set_position(self.textNode, pos)
-	end
+	self.cursorX = baseCursorX + self.textScrollOX
 
 	self.wgtTheme.updateCursor(self)
 end
 
-function InputField.textInput(self, text)
-	self.text = self.text .. text
+function InputField.updateText(self, text)
+	self.text = text
 	_sendCb(self, self.editFn) -- Can modify self.text.
 	gui.set_text(self.textNode, self.text)
+	self:updateTotalTextWidth()
 	self:updateCursorPos()
 	self.wgtTheme.updateText(self)
+end
+
+function InputField.textInput(self, text)
+	self:updateText(self.text .. text)
 end
 
 function InputField.backspace(self)
-	self.text = self.text:sub(1, -2)
-	_sendCb(self, self.editFn) -- Can modify self.text.
-	gui.set_text(self.textNode, self.text)
-	self:updateCursorPos()
-	self.wgtTheme.updateText(self)
+	self:updateText(self.text:sub(1, -2))
 end
 
 function InputField.setText(self, text)
-	self.text = text ~= nil and tostring(text) or ""
-	_sendCb(self, self.editFn) -- Can modify self.text.
-	gui.set_text(self.textNode, self.text)
-	self:updateCursorPos()
-	self.wgtTheme.updateText(self)
+	self:updateText(text ~= nil and tostring(text) or "")
 end
 
 return InputField

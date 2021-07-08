@@ -28,19 +28,27 @@ local function sliderPressed(self, btn)
 	print("sliderPressed")
 end
 
-local function inputFieldConfirmed(self, btn, field)
-	print("input confirmed ", field, btn.text)
+local function numberFieldConfirmed(self, btn, fieldName)
+	print("input confirmed ", fieldName, btn.text)
 	if not tonumber(btn.text) then
 		print("reject input")
 		return true
 	end
 end
 
-local function inputEdited(self, btn, field)
-	print(btn.text, field)
+local function numberFieldEdited(self, btn, fieldName)
+	print("", btn.text, fieldName)
 	if not tonumber(btn.text) then
-		print("  invalid input")
+		print("   invalid input")
 	end
+end
+
+local function inputFieldConfirmed(self, btn, fieldName)
+	print("input confirmed ", fieldName, btn.text)
+end
+
+local function inputFieldEditod(self, btn, fieldName)
+	print("", btn.text, fieldName)
 end
 
 function init(self)
@@ -74,8 +82,8 @@ function init(self)
 
 	self.ruu:mapNextPrev({ slider1, slider2, slider3 })
 
-	local input1 = self.ruu:InputField("input1", inputFieldConfirmed, "name..."):args("name"):onEdit(inputEdited)
-	local input2 = self.ruu:InputField("input2", inputFieldConfirmed, "value..."):args("value"):onEdit(inputEdited)
+	local input1 = self.ruu:InputField("input1", numberFieldConfirmed, "0"):args("number"):onEdit(numberFieldEdited)
+	local input2 = self.ruu:InputField("input2", inputFieldConfirmed, "text..."):args("text"):onEdit(inputFieldEditod)
 	self.ruu:mapNextPrev({ input1, input2 })
 end
 
