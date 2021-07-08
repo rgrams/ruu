@@ -1,23 +1,26 @@
 
 local M = {}
 
-local PIVOTS = {
-	 [gui.PIVOT_CENTER] = vmath.vector3(0, 0, 0),
-	 [gui.PIVOT_N] = vmath.vector3(0, 1, 0),
-	 [gui.PIVOT_NE] = vmath.vector3(1, 1, 0),
-	 [gui.PIVOT_E] = vmath.vector3(1, 0, 0),
-	 [gui.PIVOT_SE] = vmath.vector3(1, -1, 0),
-	 [gui.PIVOT_S] = vmath.vector3(0, -1, 0),
-	 [gui.PIVOT_SW] = vmath.vector3(-1, -1, 0),
-	 [gui.PIVOT_W] = vmath.vector3(-1, 0, 0),
-	 [gui.PIVOT_NW] = vmath.vector3(-1, 1, 0)
- }
+local PIVOT_VEC = { -- Vector from node center to pivot point.
+	[gui.PIVOT_CENTER] = vmath.vector3(0, 0, 0),
+	[gui.PIVOT_N] = vmath.vector3(0, 0.5, 0),
+	[gui.PIVOT_NE] = vmath.vector3(0.5, 0.5, 0),
+	[gui.PIVOT_E] = vmath.vector3(0.5, 0, 0),
+	[gui.PIVOT_SE] = vmath.vector3(0.5, -0.5, 0),
+	[gui.PIVOT_S] = vmath.vector3(0, -0.5, 0),
+	[gui.PIVOT_SW] = vmath.vector3(-0.5, -0.5, 0),
+	[gui.PIVOT_W] = vmath.vector3(-0.5, 0, 0),
+	[gui.PIVOT_NW] = vmath.vector3(-0.5, 0.5, 0)
+}
+M.PIVOT_VEC = PIVOT_VEC
 
-function M.getCenterPos(node) -- pivot-independent get_position for scroll areas
-	local pivotVec = PIVOTS[gui.get_pivot(node)]
+function M.getCenterPos(node) -- Pivot-independent get_position.
+	local pivotVec = PIVOT_VEC[gui.get_pivot(node)]
 	local size = gui.get_size(node)
-	pivotVec.x = pivotVec.x * size.x * 0.5;  pivotVec.y = pivotVec.y * size.y * 0.5
-	return gui.get_position(node) - pivotVec
+	local px, py = pivotVec.x * size.x, pivotVec.y * size.y
+	local pos = gui.get_position(node)
+	pos.x, pos.y = pos.x - px, pos.y - py
+	return pos
 end
 
 function M.safeGetNode(id)
