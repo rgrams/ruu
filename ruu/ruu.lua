@@ -14,12 +14,15 @@ local InputField = require("ruu.widgets.InputField")
 Ruu.CLICK = hash("touch")
 Ruu.ENTER = hash("enter")
 Ruu.TEXT = hash("text")
+Ruu.DELETE = hash("delete")
 Ruu.BACKSPACE = hash("backspace")
 Ruu.CANCEL = hash("cancel")
 Ruu.NAV_DIRS = {
 	[hash("up")] = "up", [hash("down")] = "down", [hash("left")] = "left", [hash("right")] = "right",
 	[hash("next")] = "next", [hash("prev")] = "prev"
 }
+Ruu.END = hash("end")
+Ruu.HOME = hash("home")
 local IS_KEYBOARD = true
 local IS_NOT_KEYBOARD = false
 
@@ -266,6 +269,13 @@ local function isDraggable(widget)
 	return widget.drag
 end
 
+local function callIfExists(widget, fnName, ...)
+	if widget and widget[fnName] then
+		widget[fnName](widget, ...)
+		return true
+	end
+end
+
 function Ruu.input(self, action_id, action)
 	if not action_id then
 		self:mouseMoved(action.x, action.y, action.dx, action.dy)
@@ -299,7 +309,7 @@ function Ruu.input(self, action_id, action)
 				self.focusedWidget:release(false, nil, nil, IS_KEYBOARD)
 			end
 		end
-	elseif action.pressed and self.NAV_DIRS[action_id] then
+	elseif self.NAV_DIRS[action_id] and (action.pressed or action.repeated) then
 		if self.focusedWidget then
 			local dirStr = self.NAV_DIRS[action_id]
 			local neighbor = self.focusedWidget:getFocusNeighbor(dirStr)
@@ -310,23 +320,17 @@ function Ruu.input(self, action_id, action)
 			end
 		end
 	elseif action_id == self.TEXT then
-		local widget = self.focusedWidget
-		if widget and widget.textInput then
-			widget:textInput(action.text)
-			return true
-		end
+		return callIfExists(self.focusedWidget, "textInput", action.text)
 	elseif action_id == self.BACKSPACE and (action.pressed or action.repeated) then
-		local widget = self.focusedWidget
-		if widget and widget.backspace then
-			widget:backspace()
-			return true
-		end
+		return callIfExists(self.focusedWidget, "backspace")
+	elseif action_id == self.DELETE and (action.pressed or action.repeated) then
+		return callIfExists(self.focusedWidget, "delete")
+	elseif action_id == self.HOME and action.pressed then
+		return callIfExists(self.focusedWidget, "home")
+	elseif action_id == self.END and action.pressed then
+		return callIfExists(self.focusedWidget, "end")
 	elseif action_id == self.CANCEL and action.pressed then
-		local widget = self.focusedWidget
-		if widget and widget.cancel then
-			widget:cancel()
-			return true
-		end
+		return callIfExists(self.focusedWidget, "cancel")
 	end
 end
 

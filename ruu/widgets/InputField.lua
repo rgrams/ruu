@@ -22,7 +22,7 @@ function InputField.set(self, ruu, owner, nodeName, confirmFn, text, wgtTheme)
 	self.textScrollOX = 0
 	self.confirmFn = confirmFn
 	self.cursorX = self.textOrigin.x
-	-- self.cursorI = 0
+	self.cursorIdx = #self.text
 
 	gui.set_text(self.textNode, self.text)
 
@@ -147,12 +147,9 @@ function InputField.scrollCharOffsetIntoView(self, x)
 end
 
 function InputField.updateCursorPos(self)
-	local baseCursorX = self:getCharXOffset(#self.text)
-
+	local baseCursorX = self:getCharXOffset(self.cursorIdx)
 	self:scrollCharOffsetIntoView(baseCursorX)
-
 	self.cursorX = baseCursorX + self.textScrollOX
-
 	self.wgtTheme.updateCursor(self)
 end
 
@@ -165,16 +162,58 @@ function InputField.updateText(self, text)
 	self.wgtTheme.updateText(self)
 end
 
+function InputField.insertText(self, text)
+	local preCursorText = string.sub(self.text, 0, self.cursorIdx)
+	local postCursorText = string.sub(self.text, self.cursorIdx + 1)
+	self.cursorIdx = self.cursorIdx + #text
+	self:updateText(preCursorText .. text .. postCursorText)
+end
+
 function InputField.textInput(self, text)
-	self:updateText(self.text .. text)
+	self:insertText(text)
 end
 
 function InputField.backspace(self)
-	self:updateText(self.text:sub(1, -2))
+	local preCursorText = string.sub(self.text, 0, self.cursorIdx - 1) -- Skip back 1 character.
+	local postCursorText = string.sub(self.text, self.cursorIdx + 1)
+	self.cursorIdx = math.max(0, self.cursorIdx - 1)
+	self:updateText(preCursorText .. postCursorText)
 end
 
 function InputField.setText(self, text)
-	self:updateText(text ~= nil and tostring(text) or "")
+	text = text ~= nil and tostring(text) or ""
+	self.cursorIdx = #text
+	self:updateText(text)
+end
+
+function InputField.delete(self)
+	local preCursorText = string.sub(self.text, 0, self.cursorIdx)
+	local postCursorText = string.sub(self.text, self.cursorIdx + 2) -- Skip forward 1 character.
+	-- Deleting in front of the cursor, so cursor index stays the same.
+	self:updateText(preCursorText .. postCursorText)
+end
+
+function InputField.home(self)
+	self.cursorIdx = 0
+	self:updateCursorPos()
+end
+
+local function _end(self)
+	self.cursorIdx = #self.text
+	self:updateCursorPos()
+end
+InputField["end"] = _end
+
+function InputField.getFocusNeighbor(self, dir)
+	if dir == "left" then
+		self.cursorIdx = math.max(0, self.cursorIdx - 1)
+		self:updateCursorPos()
+	elseif dir == "right" then
+		self.cursorIdx = math.min(#self.text, self.cursorIdx + 1)
+		self:updateCursorPos()
+	else
+		return self.neighbor[dir]
+	end
 end
 
 return InputField

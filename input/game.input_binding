@@ -34,6 +34,18 @@ key_trigger {
   input: KEY_BACKQUOTE
   action: "prev"
 }
+key_trigger {
+  input: KEY_DEL
+  action: "delete"
+}
+key_trigger {
+  input: KEY_HOME
+  action: "home"
+}
+key_trigger {
+  input: KEY_END
+  action: "end"
+}
 mouse_trigger {
   input: MOUSE_BUTTON_LEFT
   action: "touch"
