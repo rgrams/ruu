@@ -1,9 +1,9 @@
 
 local Button = require "ruu.widgets.Button"
 
-local SliderHandle = Button:extend()
+local Slider = Button:extend()
 
-SliderHandle.nudgeDist = 5
+Slider.nudgeDist = 5
 
 -- Hack to try to get global rotation, check two parents up.
 local function getScreenRotation(node)
@@ -27,22 +27,22 @@ local function toLocal(node, dx, dy)
 	return delta.x, delta.y
 end
 
-function SliderHandle.set(self, ruu, owner, nodeName, releaseFn, fraction, length, wgtTheme)
+function Slider.set(self, ruu, owner, nodeName, releaseFn, fraction, length, wgtTheme)
 	self.fraction = fraction or 0
 	self.length = length or 100
 	self.xPos = 0
-	SliderHandle.super.set(self, ruu, owner, nodeName, releaseFn, wgtTheme)
+	Slider.super.set(self, ruu, owner, nodeName, releaseFn, wgtTheme)
 	self.barNode = gui.get_node(nodeName .. "/bar")
 	self:updatePos(self, nil, nil) -- To update slider pos based on current fraction.
 end
 
-function SliderHandle.onDrag(self, dragFn)
+function Slider.onDrag(self, dragFn)
 	self.dragFn = dragFn
 	return self -- Allow chaining.
 end
 
-function SliderHandle.updatePos(self, dx, dy, isLocal)
-	local startPoint = -self.length/2 -- Slider handle must be anchored to center point.
+function Slider.updatePos(self, dx, dy, isLocal)
+	local startPoint = -self.length/2 -- Assumes that the handle at x=0 is centered on the bar.
 	local endPoint = self.length/2
 	local pos = gui.get_position(self.node)
 
@@ -60,7 +60,7 @@ function SliderHandle.updatePos(self, dx, dy, isLocal)
 	gui.set_position(self.node, pos)
 end
 
-function SliderHandle.drag(self, dx, dy, dragType, isLocal)
+function Slider.drag(self, dx, dy, dragType, isLocal)
 	if dragType then  return  end -- Only respond to the default drag type.
 
 	self:updatePos(dx, dy, isLocal)
@@ -79,7 +79,7 @@ end
 local dirs = { up = {0, 1}, down = {0, -1}, left = {-1, 0}, right = {1, 0} }
 local COS_45 = math.cos(math.rad(45))
 
-function SliderHandle.getFocusNeighbor(self, dir)
+function Slider.getFocusNeighbor(self, dir)
 	local dirVec = dirs[dir]
 	if dirVec then
 		local dx, dy = dirVec[1], dirVec[2]
@@ -95,4 +95,4 @@ function SliderHandle.getFocusNeighbor(self, dir)
 	end
 end
 
-return SliderHandle
+return Slider

@@ -8,7 +8,7 @@ local Ruu = Class:extend()
 local Button = require("ruu.widgets.Button")
 local ToggleButton = require("ruu.widgets.ToggleButton")
 local RadioButton = require("ruu.widgets.RadioButton")
-local SliderHandle = require("ruu.widgets.SliderHandle")
+local Slider = require("ruu.widgets.Slider")
 local InputField = require("ruu.widgets.InputField")
 
 Ruu.CLICK = hash("touch")
@@ -73,7 +73,7 @@ function Ruu.groupRadioButtons(self, widgets)
 end
 
 function Ruu.Slider(self, nodeName, releaseFn, fraction, length, wgtTheme)
-	local btn = SliderHandle(self, self.owner, nodeName, releaseFn, fraction, length, wgtTheme or self.theme.SliderHandle)
+	local btn = Slider(self, self.owner, nodeName, releaseFn, fraction, length, wgtTheme or self.theme.Slider)
 	addWidget(self, nodeName, btn)
 	return btn
 end

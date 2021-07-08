@@ -102,15 +102,15 @@ function InputField.textRejected(self, rejectedText)
 end
 
 --##############################  SLIDER - HANDLE  ##############################
-local SliderHandle = Button:extend()
-M.SliderHandle = SliderHandle
+local Slider = Button:extend()
+M.Slider = Slider
 
-function SliderHandle.init(self, nodeName)
-	SliderHandle.super.init(self, nodeName)
-	SliderHandle.drag(self)
+function Slider.init(self, nodeName)
+	Slider.super.init(self, nodeName)
+	Slider.drag(self)
 end
 
-function SliderHandle.drag(self)
+function Slider.drag(self)
 	-- self.angle = self.fraction * math.pi
 end
 
