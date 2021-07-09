@@ -85,12 +85,14 @@ end
 
 function InputField.focus(self, isKeyboard)
 	InputField.super.focus(self, isKeyboard)
-	gui.set_enabled(self.cursorNode, self.isFocused)
+	gui.set_enabled(self.cursorNode, true)
+	gui.set_enabled(self.selectionNode, self.hasSelection)
 end
 
 function InputField.unfocus(self, isKeyboard)
 	InputField.super.unfocus(self, isKeyboard)
-	gui.set_enabled(self.cursorNode, self.isFocused)
+	gui.set_enabled(self.cursorNode, false)
+	gui.set_enabled(self.selectionNode, false)
 end
 
 function InputField.updateCursor(self, cursorX, selectionTailX)
