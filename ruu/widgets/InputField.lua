@@ -52,6 +52,7 @@ local function _sendCb(self, fn)
 	end
 end
 
+--------------------  Standard Widget Methods  --------------------
 function InputField.release(self, dontFire, mx, my, isKeyboard)
 	self.isPressed = false
 	if self.releaseFn and not dontFire then
@@ -67,6 +68,7 @@ function InputField.release(self, dontFire, mx, my, isKeyboard)
 			self.oldText = self.text
 		end
 	end
+	if not dontFire then  self:selectAll()  end
 	self.wgtTheme.release(self, dontFire, mx, my, isKeyboard)
 end
 
@@ -74,6 +76,7 @@ function InputField.focus(self, isKeyboard)
 	if not self.isFocused then
 		self.isFocused = true
 		self.oldText = self.text -- Save in case of cancel.
+		self:selectAll()
 	end
 	self.wgtTheme.focus(self)
 end
@@ -97,7 +100,7 @@ end
 function InputField.cancel(self)
 	self.text = self.oldText
 	gui.set_text(self.textNode, self.text)
-	self:updateCursorPos()
+	self:selectAll()
 	self.wgtTheme.updateText(self)
 end
 
@@ -203,7 +206,13 @@ end
 function InputField.startSelection(self, charIdx)
 	self.hasSelection = true
 	self.selectionTailIdx = charIdx
-	self:updateSelectionXPos()
+	self:updateSelectionXPos() -- Only nood to update X pos now, and when scroll actually changes.
+end
+
+function InputField.selectAll(self)
+	self:startSelection(0)
+	self.cursorIdx = #self.text
+	self:updateCursorPos()
 end
 
 function InputField.getSelectionLeftIdx(self)
