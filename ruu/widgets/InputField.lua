@@ -216,7 +216,7 @@ end
 
 function InputField.updateSelectionXPos(self)
 	if self.hasSelection then
-		self.selectionTailX = self:getCharXOffset(self.selectionTailIdx)
+		self.selectionTailX = self:getCharXOffset(self.selectionTailIdx) + self.textScrollOX
 	end
 end
 
