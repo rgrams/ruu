@@ -160,7 +160,7 @@ function InputField.updateCursorPos(self)
 	local baseCursorX = self:getCharXOffset(self.cursorIdx)
 	self:scrollCharOffsetIntoView(baseCursorX)
 	self.cursorX = baseCursorX + self.textScrollOX
-	self.wgtTheme.updateCursor(self)
+	self.wgtTheme.updateCursor(self, self.cursorX, self.selectionTailX)
 end
 
 --------------------  Internal Text Setting  --------------------

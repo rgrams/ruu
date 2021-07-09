@@ -77,6 +77,10 @@ function InputField.init(self, nodeName)
 	InputField.super.init(self, nodeName)
 	self.cursorNode = gui.get_node(nodeName .. "/cursor")
 	gui.set_enabled(self.cursorNode, self.isFocused)
+	self.selectionNode = gui.get_node(nodeName .. "/selection")
+	gui.set_enabled(self.selectionNode, false)
+	self.selectionNodePos = gui.get_position(self.selectionNode)
+	self.selectionNodeSize = gui.get_size(self.selectionNode)
 end
 
 function InputField.focus(self, isKeyboard)
@@ -89,10 +93,21 @@ function InputField.unfocus(self, isKeyboard)
 	gui.set_enabled(self.cursorNode, self.isFocused)
 end
 
-function InputField.updateCursor(self)
+function InputField.updateCursor(self, cursorX, selectionTailX)
 	local pos = gui.get_position(self.cursorNode)
-	pos.x = self.cursorX
+	pos.x = cursorX
 	gui.set_position(self.cursorNode, pos)
+	if selectionTailX then
+		gui.set_enabled(self.selectionNode, true)
+		local selectionX = cursorX
+		local selectionWidth = selectionTailX - cursorX -- Width can be negative, it works fine.
+		self.selectionNodePos.x = selectionX
+		self.selectionNodeSize.x = selectionWidth
+		gui.set_position(self.selectionNode, self.selectionNodePos)
+		gui.set_size(self.selectionNode, self.selectionNodeSize)
+	else
+		gui.set_enabled(self.selectionNode, false)
+	end
 end
 
 function InputField.updateText(self)
