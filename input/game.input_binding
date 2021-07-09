@@ -46,6 +46,14 @@ key_trigger {
   input: KEY_END
   action: "end"
 }
+key_trigger {
+  input: KEY_LSHIFT
+  action: "selection modifier"
+}
+key_trigger {
+  input: KEY_RSHIFT
+  action: "selection modifier"
+}
 mouse_trigger {
   input: MOUSE_BUTTON_LEFT
   action: "touch"

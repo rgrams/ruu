@@ -23,6 +23,7 @@ Ruu.NAV_DIRS = {
 }
 Ruu.END = hash("end")
 Ruu.HOME = hash("home")
+Ruu.SELECTION_MODIFIER = hash("selection modifier")
 local IS_KEYBOARD = true
 local IS_NOT_KEYBOARD = false
 
@@ -331,6 +332,12 @@ function Ruu.input(self, action_id, action)
 		return callIfExists(self.focusedWidget, "end")
 	elseif action_id == self.CANCEL and action.pressed then
 		return callIfExists(self.focusedWidget, "cancel")
+	elseif action_id == self.SELECTION_MODIFIER then
+		if action.pressed then
+			self.selectionModifierPresses = self.selectionModifierPresses + 1
+		elseif action.released then
+			self.selectionModifierPresses = self.selectionModifierPresses - 1
+		end
 	end
 end
 
@@ -360,6 +367,7 @@ function Ruu.set(self, owner, getInput, theme)
 	self.drags = {}
 	-- A dictionary of currently dragged widgets, with the number of active drags on each (in case of custom drags).
 	self.dragsOnWgt = {}
+	self.selectionModifierPresses = 0
 end
 
 return Ruu

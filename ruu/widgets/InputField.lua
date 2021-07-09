@@ -23,6 +23,9 @@ function InputField.set(self, ruu, owner, nodeName, confirmFn, text, wgtTheme)
 	self.confirmFn = confirmFn
 	self.cursorX = self.textOrigin.x
 	self.cursorIdx = #self.text
+	self.hasSelection = false
+	self.selectionTailX = nil
+	self.selectionTailIdx = nil
 
 	gui.set_text(self.textNode, self.text)
 
@@ -98,6 +101,8 @@ function InputField.cancel(self)
 	self.wgtTheme.updateText(self)
 end
 
+--------------------  Text Scrolling  --------------------
+
 -- Save left and right edge positions of the text-mask, relative to the parent.
 function InputField.updateMaskSize(self)
 	local pivot = util.PIVOT_VEC[gui.get_pivot(self.textMaskNode)]
@@ -113,6 +118,7 @@ function InputField.updateTotalTextWidth(self)
 end
 
 function InputField.setScrollOffset(self, scrollOX)
+	local oldScrollOX = self.textScrollOX
 	local normalViewWidth = self.maskRightEdgeX - self.textOrigin.x
 	if self.totalTextWidth <= normalViewWidth then
 		scrollOX = 0
@@ -121,9 +127,13 @@ function InputField.setScrollOffset(self, scrollOX)
 		scrollOX = math.max(-maxNegScroll, scrollOX)
 	end
 
-	self.textScrollOX = scrollOX
-	self.textPos.x = self.textOrigin.x + self.textScrollOX
-	gui.set_position(self.textNode, self.textPos)
+	if scrollOX ~= oldScrollOX then
+		self.textScrollOX = scrollOX
+		self.textPos.x = self.textOrigin.x + self.textScrollOX
+		gui.set_position(self.textNode, self.textPos)
+
+		self:updateSelectionXPos()
+	end
 end
 
 -- Gets the un-scrolled X pos of the -right edge- of the character at `charIdx`.
@@ -153,6 +163,7 @@ function InputField.updateCursorPos(self)
 	self.wgtTheme.updateCursor(self)
 end
 
+--------------------  Internal Text Setting  --------------------
 function InputField.updateText(self, text)
 	self.text = text
 	_sendCb(self, self.editFn) -- Can modify self.text.
@@ -163,21 +174,98 @@ function InputField.updateText(self, text)
 end
 
 function InputField.insertText(self, text)
-	local preCursorText = string.sub(self.text, 0, self.cursorIdx)
-	local postCursorText = string.sub(self.text, self.cursorIdx + 1)
+	text = text or ""
+	local preCursorText, postCursorText
+
+	if self.hasSelection then
+		local selectionLeftIdx, selectionRightIdx = self:getSelectionLeftIdx(), self:getSelectionRightIdx()
+		preCursorText = string.sub(self.text, 0, selectionLeftIdx)
+		postCursorText = string.sub(self.text, selectionRightIdx + 1)
+		self.cursorIdx = selectionLeftIdx
+		self:clearSelection()
+	else
+		preCursorText = string.sub(self.text, 0, self.cursorIdx)
+		postCursorText = string.sub(self.text, self.cursorIdx + 1)
+	end
+
 	self.cursorIdx = self.cursorIdx + #text
 	self:updateText(preCursorText .. text .. postCursorText)
 end
 
-function InputField.textInput(self, text)
-	self:insertText(text)
+--------------------  Selection  --------------------
+function InputField.clearSelection(self)
+	self.hasSelection = false
+	self.selectionTailIdx = nil
+	self.selectionTailX = nil
 end
 
-function InputField.backspace(self)
-	local preCursorText = string.sub(self.text, 0, self.cursorIdx - 1) -- Skip back 1 character.
-	local postCursorText = string.sub(self.text, self.cursorIdx + 1)
-	self.cursorIdx = math.max(0, self.cursorIdx - 1)
-	self:updateText(preCursorText .. postCursorText)
+-- Set the "tail" character index of the selection. The "head" position of the selection is the cursor index.
+function InputField.startSelection(self, charIdx)
+	self.hasSelection = true
+	self.selectionTailIdx = charIdx
+	self:updateSelectionXPos()
+end
+
+function InputField.getSelectionLeftIdx(self)
+	return math.min(self.cursorIdx, self.selectionTailIdx)
+end
+
+function InputField.getSelectionRightIdx(self)
+	return math.max(self.cursorIdx, self.selectionTailIdx)
+end
+
+function InputField.updateSelectionXPos(self)
+	if self.hasSelection then
+		self.selectionTailX = self:getCharXOffset(self.selectionTailIdx)
+	end
+end
+
+--------------------  Cursor Movement  --------------------
+function InputField.setCursorIdx(self, index)
+	if self.hasSelection and self.ruu.selectionModifierPresses == 0 then
+		self:clearSelection()
+	elseif not self.hasSelection and self.ruu.selectionModifierPresses > 0 then
+		self:startSelection(self.cursorIdx)
+	end
+	self.cursorIdx = math.max(0, math.min(#self.text, index))
+	self:updateCursorPos()
+end
+
+function InputField.moveCursor(self, dx)
+	if dx == 0 then  return  end
+
+	if self.hasSelection and self.ruu.selectionModifierPresses == 0 then
+		if dx > 0 then
+			local selectionRightIdx = math.max(self.cursorIdx, self.selectionTailIdx)
+			self.cursorIdx = selectionRightIdx
+		elseif dx < 0 then
+			local selectionLeftIdx = math.min(self.cursorIdx, self.selectionTailIdx)
+			self.cursorIdx = selectionLeftIdx
+		end
+		self:clearSelection()
+		self:updateCursorPos()
+		return -- Skip normal cursor movement.
+	elseif not self.hasSelection and self.ruu.selectionModifierPresses > 0 then
+		self:startSelection(self.cursorIdx)
+	end
+
+	if dx > 0 then
+		self.cursorIdx = math.min(#self.text, self.cursorIdx + dx)
+	elseif dx < 0 then
+		self.cursorIdx = math.max(0, self.cursorIdx + dx)
+	end
+	self:updateCursorPos()
+end
+
+--------------------  External Input Methods  --------------------
+function InputField.getFocusNeighbor(self, dir)
+	if dir == "left" then
+		self:moveCursor(-1)
+	elseif dir == "right" then
+		self:moveCursor(1)
+	else
+		return self.neighbor[dir]
+	end
 end
 
 function InputField.setText(self, text)
@@ -186,34 +274,39 @@ function InputField.setText(self, text)
 	self:updateText(text)
 end
 
+function InputField.textInput(self, text)
+	self:insertText(text)
+end
+
+function InputField.backspace(self)
+	if self.hasSelection then
+		self:insertText("")
+	else
+		local preCursorText = string.sub(self.text, 0, self.cursorIdx - 1) -- Skip back 1 character.
+		local postCursorText = string.sub(self.text, self.cursorIdx + 1)
+		self.cursorIdx = math.max(0, self.cursorIdx - 1)
+		self:updateText(preCursorText .. postCursorText)
+	end
+end
+
 function InputField.delete(self)
-	local preCursorText = string.sub(self.text, 0, self.cursorIdx)
-	local postCursorText = string.sub(self.text, self.cursorIdx + 2) -- Skip forward 1 character.
-	-- Deleting in front of the cursor, so cursor index stays the same.
-	self:updateText(preCursorText .. postCursorText)
+	if self.hasSelection then
+		self:insertText("")
+	else
+		local preCursorText = string.sub(self.text, 0, self.cursorIdx)
+		local postCursorText = string.sub(self.text, self.cursorIdx + 2) -- Skip forward 1 character.
+		-- Deleting in front of the cursor, so cursor index stays the same.
+		self:updateText(preCursorText .. postCursorText)
+	end
 end
 
 function InputField.home(self)
-	self.cursorIdx = 0
-	self:updateCursorPos()
+	self:setCursorIdx(0)
 end
 
 local function _end(self)
-	self.cursorIdx = #self.text
-	self:updateCursorPos()
+	self:setCursorIdx(#self.text)
 end
 InputField["end"] = _end
-
-function InputField.getFocusNeighbor(self, dir)
-	if dir == "left" then
-		self.cursorIdx = math.max(0, self.cursorIdx - 1)
-		self:updateCursorPos()
-	elseif dir == "right" then
-		self.cursorIdx = math.min(#self.text, self.cursorIdx + 1)
-		self:updateCursorPos()
-	else
-		return self.neighbor[dir]
-	end
-end
 
 return InputField
