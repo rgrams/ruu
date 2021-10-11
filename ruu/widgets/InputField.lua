@@ -84,7 +84,7 @@ end
 function InputField.unfocus(self, isKeyboard)
 	self.isFocused = false
 	if self.isPressed then  self:release(true)  end -- Release without firing.
-	if isKeyboard and self.confirmFn then
+	if self.confirmFn then
 		local rejectedText = self.text
 		local isRejected = _sendCb(self, self.confirmFn)
 		if isRejected then
