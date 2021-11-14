@@ -288,6 +288,7 @@ function Ruu.input(self, action_id, action)
 				-- Start drag - do it on mouse down instead of mouse move so we can easily set up initial drag offsets, etc.
 				local topDraggableWgt = util.getTopWidget(self.hoveredWidgets, "node", self.layerDepths, isDraggable)
 				if topDraggableWgt then  self:startDrag(topDraggableWgt)  end
+				return true
 			else
 				self:setFocus(nil, IS_NOT_KEYBOARD)
 			end
